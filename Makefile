@@ -91,6 +91,10 @@ SRC					+= $(S_PATH)$(CORE)main.c
 
 HDR					+=	libft.h
 
+# std
+
+STD					+=	c17
+
 
 ###############################################################################
 #                                                                             #
@@ -105,13 +109,13 @@ vpath %.h $(H_PATH)
 # Variables
 
 DEBUG				=
-CFLAGS				=	-Wall -Wextra -Werror
+CFLAGS				=	-Wall -Wextra -Werror -std=$(STD)
 ifeq ($(DEBUG), g)
 	CFLAGS			=	-g
 else ifeq ($(DEBUG), fsanitize)
 	CFLAGS			=	-fsanitize=address -g3
 else ifeq ($(DEBUG), hard)
-	CFLAGS			+=	-Wall -Weverything -fsanitize=address,undefined -Wno-cast-qual
+	CFLAGS			+=	-Weverything -fsanitize=address,undefined -Wno-cast-qual
 	CFLAGS			+=	-Wno-missing-noreturn -Wno-disabled-macro-expansion
 else ifeq ($(DEBUG), dev)
 	CFLAGS			=
@@ -169,11 +173,11 @@ $(NAME): $(OBJ) $(BUILD_FILE) $(TEST)
 	echo "\n$(G_C)[$(BUILD_BRANCH)] $(RESET_C)$@ $(F_C) \
 	v.$(BUILD_RELEASE)_$(BUILD_VERSION)_$(BUILD_PATCH)_$(BUILD_DATE) $(RESET_C) is ready !"
 	cp $(NAME) \
-	$(B_PATH)$(NAME)_$(BUILD_RELEASE)_$(BUILD_VERSION)_$(BUILD_PATCH)_$(BUILD_DATE)
+	$(B_PATH)$(NAME)_$(BUILD_RELEASE)_$(BUILD_VERSION)_$(BUILD_PATCH + 1)_$(BUILD_DATE)
 
 $(OBJ): $(O_PATH)%.o: $(S_PATH)%.c $(HDR)
 	$(CMPLC) -DBUILDR=$(BUILD_RELEASE) -DBUILDV=$(BUILD_VERSION) \
-	-DBUILDP=$(BUILD_PATCH) -DDATE=$(BUILD_DATE) $< -o $@
+	-DBUILDP=$$(echo "$(BUILD_PATCH) + 1" | bc) -DDATE=$(BUILD_DATE) $< -o $@
 	$(ECHO) $(GCFIL) $<
 
 # Check if .build exist, then incremente patch level each compilation.
