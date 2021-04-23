@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/04/09 16:57:57 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/04/23 15:31:35 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 # include "libft.h"
 # include <unistd.h>
+# include <netinet/in.h>
 
 # define SUCCESS  				0
 # define FAILURE                2
@@ -26,14 +27,18 @@
 # define BUILD_RELEASE_STRING	STR_VALUE(BUILDR)
 # define BUILD_PATCH_STRING     STR_VALUE(BUILDP)
 # define BUILD_DATE_STRING      STR_VALUE(DATE)
-# define ALLOWED_OPT            "vh"
+# define ALLOWED_OPT            "abc"
 # define UNALLOWED_OPT          1ULL << 63
 # define V_OPT                  1ULL << ('v' - 97)
 # define H_OPT                  1ULL << ('h' - 97)
+# define TEST1                  "test1"
+# define TEST2                  "test2"
+# define ALLOWED_OPT_TAB        ((const char *[]){TEST1, TEST2, NULL}
 
 typedef struct                  s_core
 {
-    uint64_t                    opt;
+    t_opt                       *opt;
+    char                        *target;
 }                               t_core;
 
 #endif

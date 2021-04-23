@@ -6,13 +6,14 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:33:32 by arsciand          #+#    #+#             */
-/*   Updated: 2021/04/09 16:58:24 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/04/23 15:39:18 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_ping.h"
 #include <stdio.h>
 
+/* Build informations */
 static void print_version()
 {
     fprintf(stdout, "ft_ping: v.%s-%s-%s-%s\n",
@@ -27,33 +28,36 @@ static void print_usage(void)
     fprintf(stderr, "Usage: ft_ping [-vh] <destination>\n");
 }
 
-static void print_unallowed_opt(uint64_t opt) {
-    fprintf(stderr, "ft_ping: invalid option -- '%c'\n", (char)(opt % 128));
+static void print_unallowed_opt(t_opt *opt) {
+    if (opt->invalid)
+        fprintf(stderr, "ft_ping: unrecognized option '--%s'\n", opt->invalid);
+    else
+        fprintf(stderr, "ft_ping: invalid option -- '%c'\n", (char)(opt->all % 128));
 }
 
+/* Options parser */
 static uint8_t get_opt(int argc, char **argv, t_core *core)
 {
+    ft_memset(&core->opt, 0, sizeof(t_opt));
     if (argc < 2)
     {
-        print_version();
         print_usage();
         return (FAILURE);
     }
-    core->opt = ft_getopts(argc, argv, ALLOWED_OPT);
-    if (core->opt & UNALLOWED_OPT)
+    core->opt = ft_getopts(argc, argv, ALLOWED_OPT, ALLOWED_OPT_TAB));
+    if (core->opt->all & UNALLOWED_OPT)
     {
-        print_version();
         print_unallowed_opt(core->opt);
         print_usage();
         return (FAILURE);
     }
-    if (core->opt & H_OPT)
+    if (core->opt->all & H_OPT)
     {
         print_version();
         print_usage();
         return (FAILURE);
     }
-    if (core->opt & V_OPT)
+    if (core->opt->all & V_OPT)
     {
         fprintf(stderr, "NOT SUPPORTED YET\n");
         // return (FAILURE);
@@ -63,6 +67,7 @@ static uint8_t get_opt(int argc, char **argv, t_core *core)
 
 static uint8_t init_core(t_core *core)
 {
+    // char    ip_string[INET_ADDRSTRLEN];
     (void)core;
 
     return (SUCCESS);
@@ -73,12 +78,31 @@ int     main(int argc, char *argv[])
     t_core core;
 
     ft_memset(&core, 0, sizeof(t_core));
-    if (init_core(&core) != SUCCESS)
+
+    const char **tab = ALLOWED_OPT_TAB);
+    size_t i = 0;
+    while (tab[i])
     {
-        LOG_FATAL("MALLOC ERROR ...");
-        return (EXIT_FAILURE);
+        printf("TAB[%zu] | %s\n", i, tab[i]);
+        i++;
     }
     if (get_opt(argc, argv, &core) != SUCCESS)
         exit(FAILURE);
+
+    while (core.opt->opt_set) {
+        printf("->\n%s\n%s\n", ((t_opt_set_db *)core.opt->opt_set->content)->current, ((t_opt_set_db *)core.opt->opt_set->content)->arg);
+        core.opt->opt_set = core.opt->opt_set->next;
+    }
+    /* Check if ft_ping executed as root */
+    // if (getuid())
+    // {
+    //     fprintf(stderr, "ft_ping: socket: Operation not permitted\n");
+    //     exit(FAILURE);
+    // }
+
+    if (init_core(&core) != SUCCESS)
+        return (EXIT_FAILURE);
+    // else
+    //     exec_ft_ping(&core);
     return (EXIT_SUCCESS);
 }
