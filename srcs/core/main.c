@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:33:32 by arsciand          #+#    #+#             */
-/*   Updated: 2021/04/23 15:39:18 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/04/23 15:54:43 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include <stdio.h>
 
 /* Build informations */
-static void print_version()
+static void     print_version()
 {
     fprintf(stdout, "ft_ping: v.%s-%s-%s-%s\n",
         BUILD_VERSION_STRING,
@@ -23,12 +23,12 @@ static void print_version()
         BUILD_DATE_STRING);
 }
 
-static void print_usage(void)
+static void     print_usage(void)
 {
     fprintf(stderr, "Usage: ft_ping [-vh] <destination>\n");
 }
 
-static void print_unallowed_opt(t_opt *opt) {
+static void     print_unallowed_opt(t_opt *opt) {
     if (opt->invalid)
         fprintf(stderr, "ft_ping: unrecognized option '--%s'\n", opt->invalid);
     else
@@ -36,7 +36,7 @@ static void print_unallowed_opt(t_opt *opt) {
 }
 
 /* Options parser */
-static uint8_t get_opt(int argc, char **argv, t_core *core)
+static uint8_t  get_opt(int argc, char **argv, t_core *core)
 {
     ft_memset(&core->opt, 0, sizeof(t_opt));
     if (argc < 2)
@@ -73,9 +73,9 @@ static uint8_t init_core(t_core *core)
     return (SUCCESS);
 }
 
-int     main(int argc, char *argv[])
+int             main(int argc, char *argv[])
 {
-    t_core core;
+    t_core  core;
 
     ft_memset(&core, 0, sizeof(t_core));
 
