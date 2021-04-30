@@ -56,6 +56,7 @@ Temporary Items
 # Callgrind output files
 callgrind.out
 callgrind.out.*
+valgrind-out.txt
 
 # Cachegrind output files
 cachegrind.out
