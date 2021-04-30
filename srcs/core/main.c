@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:33:32 by arsciand          #+#    #+#             */
-/*   Updated: 2021/04/23 15:54:43 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/04/30 15:30:10 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,39 +28,50 @@ static void     print_usage(void)
     fprintf(stderr, "Usage: ft_ping [-vh] <destination>\n");
 }
 
-static void     print_unallowed_opt(t_opt *opt) {
-    if (opt->invalid)
-        fprintf(stderr, "ft_ping: unrecognized option '--%s'\n", opt->invalid);
+static void     print_unallowed_opt(t_opts_args *opts_args) {
+    if (opts_args->invalid)
+        fprintf(stderr, "ft_ping: unrecognized option '--%s'\n", opts_args->invalid);
     else
-        fprintf(stderr, "ft_ping: invalid option -- '%c'\n", (char)(opt->all % 128));
+        fprintf(stderr, "ft_ping: invalid option -- '%c'\n", (char)(opts_args->all % 128));
 }
 
 /* Options parser */
-static uint8_t  get_opt(int argc, char **argv, t_core *core)
+static uint8_t  get_opts_args_handler(int argc, char **argv, t_core *core)
 {
-    ft_memset(&core->opt, 0, sizeof(t_opt));
+    t_opts_conf opts_conf;
+
+    ft_memset(&opts_conf, 0, sizeof(t_opts_conf));
+    opts_conf.allowed_opt = ALLOWED_OPT;
+    // opts_conf.allowed_opt_tab = ALLOWED_OPT_TAB;
     if (argc < 2)
     {
         print_usage();
         return (FAILURE);
     }
-    core->opt = ft_getopts(argc, argv, ALLOWED_OPT, ALLOWED_OPT_TAB));
-    if (core->opt->all & UNALLOWED_OPT)
+    if (!(core->opts_args = ft_get_opts_and_args(argc, argv, &opts_conf)))
+        return (FAILURE);
+    if (core->opts_args->all & UNALLOWED_OPT)
     {
-        print_unallowed_opt(core->opt);
+        print_unallowed_opt(core->opts_args);
         print_usage();
         return (FAILURE);
     }
-    if (core->opt->all & H_OPT)
+    if (core->opts_args->all & H_OPT)
     {
         print_version();
         print_usage();
         return (FAILURE);
     }
-    if (core->opt->all & V_OPT)
+    if (core->opts_args->all & V_OPT)
     {
         fprintf(stderr, "NOT SUPPORTED YET\n");
-        // return (FAILURE);
+        return (FAILURE);
+    }
+    if (ft_tablen((const char **)core->opts_args->args) > 1)
+    {
+        fprintf(stderr, "ft_ping: too many arguments: hops not implemented\n");
+        print_usage();
+        return (FAILURE);
     }
     return (SUCCESS);
 }
@@ -73,36 +84,33 @@ static uint8_t init_core(t_core *core)
     return (SUCCESS);
 }
 
+int8_t  exit_routine(t_core *core, int8_t status, uint8_t do_exit)
+{
+    free_opts_args(core->opts_args);
+    if (do_exit == TRUE)
+        exit(status);
+    return (status);
+}
+
 int             main(int argc, char *argv[])
 {
     t_core  core;
 
     ft_memset(&core, 0, sizeof(t_core));
+    if (get_opts_args_handler(argc, argv, &core) != SUCCESS)
+        return (exit_routine(&core, FAILURE, TRUE));
 
-    const char **tab = ALLOWED_OPT_TAB);
-    size_t i = 0;
-    while (tab[i])
-    {
-        printf("TAB[%zu] | %s\n", i, tab[i]);
-        i++;
-    }
-    if (get_opt(argc, argv, &core) != SUCCESS)
-        exit(FAILURE);
-
-    while (core.opt->opt_set) {
-        printf("->\n%s\n%s\n", ((t_opt_set_db *)core.opt->opt_set->content)->current, ((t_opt_set_db *)core.opt->opt_set->content)->arg);
-        core.opt->opt_set = core.opt->opt_set->next;
-    }
     /* Check if ft_ping executed as root */
     // if (getuid())
     // {
     //     fprintf(stderr, "ft_ping: socket: Operation not permitted\n");
-    //     exit(FAILURE);
+    //     return (exit_routine(&core, FAILURE, TRUE));
     // }
 
     if (init_core(&core) != SUCCESS)
-        return (EXIT_FAILURE);
+        return (exit_routine(&core, EXIT_FAILURE, FALSE));
     // else
     //     exec_ft_ping(&core);
-    return (EXIT_SUCCESS);
+    debug_opts_args(core.opts_args);
+    return (exit_routine(&core, EXIT_SUCCESS, FALSE));
 }

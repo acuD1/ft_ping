@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/04/23 15:51:53 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/04/30 14:25:22 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,17 +27,19 @@
 # define BUILD_RELEASE_STRING   STR_VALUE(BUILDR)
 # define BUILD_PATCH_STRING     STR_VALUE(BUILDP)
 # define BUILD_DATE_STRING      STR_VALUE(DATE)
-# define ALLOWED_OPT            "abc"
+# define ALLOWED_OPT            "vh"
 # define UNALLOWED_OPT          1ULL << 63
 # define V_OPT                  1ULL << ('v' - 97)
 # define H_OPT                  1ULL << ('h' - 97)
-# define TEST1                  "test1"
-# define TEST2                  "test2"
-# define ALLOWED_OPT_TAB        ((const char *[]){TEST1, TEST2, NULL}
+# define ALLOWED_OPT_TAB        ((const char *[]){  \
+                                    "lol",          \
+                                    "lol1",          \
+                                    NULL            \
+                                })
 
 typedef struct                  s_core
 {
-    t_opt                       *opt;
+    t_opts_args                 *opts_args;
     char                        *target;
 }                               t_core;
 
