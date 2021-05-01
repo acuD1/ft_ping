@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:33:32 by arsciand          #+#    #+#             */
-/*   Updated: 2021/04/30 20:23:23 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/05/01 17:13:47 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,9 +30,11 @@ static void     print_usage(void)
 
 static void     print_unallowed_opt(t_opts_args *opts_args) {
     if (opts_args->invalid)
-        fprintf(stderr, "ft_ping: unrecognized option '--%s'\n", opts_args->invalid);
+        fprintf(stderr,
+            "ft_ping: unrecognized option '--%s'\n", opts_args->invalid);
     else
-        fprintf(stderr, "ft_ping: invalid option -- '%c'\n", (char)(opts_args->all % 128));
+        fprintf(stderr,
+            "ft_ping: invalid option -- '%c'\n", (char)(opts_args->all % 128));
 }
 
 /* Options parser */
@@ -66,7 +68,7 @@ static uint8_t  get_opts_args_handler(int argc, char **argv, t_core *core)
         fprintf(stderr, "NOT SUPPORTED YET\n");
         return (FAILURE);
     }
-    if (ft_tablen((const char **)core->opts_args->args) > 1)
+    if (ft_tablen((const char * const *)core->opts_args->args) > 1)
     {
         fprintf(stderr, "ft_ping: too many arguments: hops not implemented\n");
         print_usage();
@@ -75,7 +77,7 @@ static uint8_t  get_opts_args_handler(int argc, char **argv, t_core *core)
     return (SUCCESS);
 }
 
-int8_t  exit_routine(t_core *core, int8_t status, uint8_t do_exit)
+static int8_t   exit_routine(t_core *core, int8_t status, uint8_t do_exit)
 {
     for (struct addrinfo *tmp = NULL; core->res; core->res = tmp)
     {
@@ -88,7 +90,7 @@ int8_t  exit_routine(t_core *core, int8_t status, uint8_t do_exit)
     return (status);
 }
 
-void            error_handler(t_core *core, int8_t status)
+static void     error_handler(t_core *core, int8_t status)
 {
     /*
        EAI_ADDRFAMILY
@@ -169,19 +171,29 @@ void            error_handler(t_core *core, int8_t status)
     switch (status)
     {
         case EAI_ADDRFAMILY:
-            fprintf(stderr, "ft_ping: %s: Address family for hostname not supported\n", core->opts_args->args[0]);
+            fprintf(stderr,
+                "ft_ping: %s: Address family for hostname not supported\n",
+                core->opts_args->args[0]);
             break ;
         case EAI_AGAIN:
-            fprintf(stderr, "ft_ping: %s: Temporary failure in name resolution\n", core->opts_args->args[0]);
+            fprintf(stderr,
+                "ft_ping: %s: Temporary failure in name resolution\n",
+                core->opts_args->args[0]);
             break ;
         case EAI_NODATA:
-            fprintf(stderr, "ft_ping: %s: No address associated with hostname\n", core->opts_args->args[0]);
+            fprintf(stderr,
+                "ft_ping: %s: No address associated with hostname\n",
+                core->opts_args->args[0]);
             break ;
         case EAI_NONAME:
-            fprintf(stderr, "ft_ping: %s: Name or service not known\n", core->opts_args->args[0]);
+            fprintf(stderr,
+                "ft_ping: %s: Name or service not known\n",
+                core->opts_args->args[0]);
             break ;
         case EAI_SYSTEM:
-            fprintf(stderr, "ft_ping: %s: System error\n", core->opts_args->args[0]);
+            fprintf(stderr,
+                "ft_ping: %s: System error\n",
+                core->opts_args->args[0]);
             break ;
     }
     exit_routine(core, FAILURE, TRUE);
@@ -194,13 +206,18 @@ static uint8_t init_core(t_core *core)
 
     /* Preparing getaddrinfo struct */
     ft_memset(&hints, 0, sizeof(struct addrinfo));
-	hints.ai_flags      = AI_V4MAPPED | AI_ADDRCONFIG;
+    hints.ai_flags      = AI_V4MAPPED | AI_ADDRCONFIG;
     hints.ai_family     = AF_INET;
-	hints.ai_socktype   = SOCK_STREAM | SOCK_DGRAM;
+    hints.ai_socktype   = SOCK_STREAM | SOCK_DGRAM;
 
-    if ((status = getaddrinfo(core->opts_args->args[0], NULL, &hints, &core->res))
+    if ((status = (int8_t)getaddrinfo(
+        core->opts_args->args[0], NULL, &hints, &core->res))
         != SUCCESS)
         error_handler(core, status);
+
+    /**/
+    #pragma clang diagnostic ignored "-Wcast-align"
+    /**/
 
     /*  Converting internet address */
     if (!(inet_ntop(core->res->ai_family,
@@ -210,7 +227,6 @@ static uint8_t init_core(t_core *core)
 
     return (SUCCESS);
 }
-
 
 int             main(int argc, char *argv[])
 {

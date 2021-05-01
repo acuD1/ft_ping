@@ -6,14 +6,16 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/04/30 20:09:13 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/05/01 17:05:48 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef FT_PING_H
 # define FT_PING_H
 
+# pragma clang diagnostic ignored "-Wreserved-id-macro"
 # define _GNU_SOURCE
+
 
 # include "libft.h"
 # include <unistd.h>
