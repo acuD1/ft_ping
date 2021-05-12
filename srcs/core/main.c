@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:33:32 by arsciand          #+#    #+#             */
-/*   Updated: 2021/05/01 17:13:47 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/05/08 19:25:05 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,17 +77,20 @@ static uint8_t  get_opts_args_handler(int argc, char **argv, t_core *core)
     return (SUCCESS);
 }
 
-static int8_t   exit_routine(t_core *core, int8_t status, uint8_t do_exit)
+static void     free_core(t_core *core)
 {
-    for (struct addrinfo *tmp = NULL; core->res; core->res = tmp)
-    {
-        tmp = core->res->ai_next;
-        free(core->res);
-    }
+    // for (struct addrinfo *tmp = NULL; core->res; core->res = tmp)
+    // {
+    //     tmp = core->res->ai_next;
+    //     free(core->res);
+    // }
     free_opts_args(core->opts_args);
-    if (do_exit == TRUE)
-        exit(status);
-    return (status);
+}
+
+static void     exit_routine(t_core *core, int8_t status)
+{
+    free_core(core);
+    exit(status);
 }
 
 static void     error_handler(t_core *core, int8_t status)
@@ -196,22 +199,33 @@ static void     error_handler(t_core *core, int8_t status)
                 core->opts_args->args[0]);
             break ;
     }
-    exit_routine(core, FAILURE, TRUE);
+    exit_routine(core, FAILURE);
 }
 
+#include <string.h>
+#include <errno.h>
+extern int errno;
 static uint8_t init_core(t_core *core)
 {
     struct  addrinfo    hints;
+    struct  addrinfo    *res    = NULL;
+    struct  addrinfo    *test   = NULL;
     int8_t              status  = 0;
 
     /* Preparing getaddrinfo struct */
     ft_memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_flags      = AI_V4MAPPED | AI_ADDRCONFIG;
     hints.ai_family     = AF_INET;
-    hints.ai_socktype   = SOCK_STREAM | SOCK_DGRAM;
+    hints.ai_socktype   = SOCK_RAW;
+    hints.ai_protocol   = IPPROTO_ICMP;
 
     if ((status = (int8_t)getaddrinfo(
-        core->opts_args->args[0], NULL, &hints, &core->res))
+        core->opts_args->args[0], NULL, &hints, &res))
+        != SUCCESS)
+        error_handler(core, status);
+
+    if ((status = (int8_t)getaddrinfo(
+        core->opts_args->args[0], NULL, &hints, &test))
         != SUCCESS)
         error_handler(core, status);
 
@@ -219,12 +233,55 @@ static uint8_t init_core(t_core *core)
     #pragma clang diagnostic ignored "-Wcast-align"
     /**/
 
-    /*  Converting internet address */
-    if (!(inet_ntop(core->res->ai_family,
-        &((struct sockaddr_in *)core->res->ai_addr)->sin_addr, core->target_ipv4,
+    /* Filling up ipv4 stringg addresse */
+    if (!(inet_ntop(res->ai_family,
+        &((struct sockaddr_in *)test->ai_addr)->sin_addr, core->target_ipv4,
         sizeof(core->target_ipv4))))
-        exit_routine(core, FAILURE, TRUE);
+        exit_routine(core, FAILURE);
 
+    /* Creating raw socket */
+    if ((core->sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1)
+    {
+        printf("socket(): ERROR: %s , errno %d\n -> s |%d|\n", strerror(errno), errno, core->sockfd);
+        exit_routine(core, FAILURE);
+    }
+
+    /* Cleaning */
+    for (struct addrinfo *tmp = NULL; res; res = tmp)
+    {
+        tmp = res->ai_next;
+        free(res);
+    }
+    return (SUCCESS);
+}
+
+uint8_t         exec_ft_ping(t_core *core)
+{
+    struct sockaddr_storage target_addr;
+    struct msghdr           target_msg;
+    ssize_t                 bytes_sent          = 0;
+    ssize_t                 bytes_received      = 0;
+    char                    msg[12]             = "Yo Google !";
+
+    ft_memset(&target_addr, 0, sizeof(struct sockaddr_storage));
+    ft_memset(&target_msg, 0, sizeof(struct msghdr));
+    bytes_sent = sendto(core->sockfd, msg, 64, 0, (struct sockaddr *)&target_addr, sizeof(struct sockaddr_storage));
+    if (bytes_sent == -1)
+    {
+        printf("sendto(): ERROR: %s , errno %d\n -> s |%zd|\n", strerror(errno), errno, bytes_sent);
+    }
+    printf("BYTES_SENT : %zd\n", bytes_sent);
+    while (1) {
+        bytes_received = recvmsg(core->sockfd, &target_msg, MSG_DONTWAIT);
+        printf("recvmsg(): ERROR: %s , errno %d\n -> s |%zd|\n", strerror(errno), errno, bytes_received);
+        if (bytes_received > 0)
+        {
+            printf("ok\n");
+            break ;
+        }
+        break;
+    }
+    printf("BYTES_RECEIVED : %zd | %d\n", bytes_received, target_msg.msg_flags);
     return (SUCCESS);
 }
 
@@ -234,20 +291,21 @@ int             main(int argc, char *argv[])
 
     ft_memset(&core, 0, sizeof(t_core));
     if (get_opts_args_handler(argc, argv, &core) != SUCCESS)
-        return (exit_routine(&core, FAILURE, TRUE));
+        exit_routine(&core, FAILURE);
 
     /* Check if ft_ping executed as root */
-    // if (getuid())
-    // {
-    //     fprintf(stderr, "ft_ping: socket: Operation not permitted\n");
-    //     return (exit_routine(&core, FAILURE, TRUE));
-    // }
+    if (getuid())
+    {
+        fprintf(stderr, "ft_ping: socket: Operation not permitted\n");
+        exit_routine(&core, FAILURE);
+    }
 
     if (init_core(&core) != SUCCESS)
-        return (exit_routine(&core, FAILURE, FALSE));
-    // else
-    //     exec_ft_ping(&core);
-    printf("-> |%s|\n", core.target_ipv4);
-    debug_opts_args(core.opts_args);
-    return (exit_routine(&core, EXIT_SUCCESS, FALSE));
+        exit_routine(&core, FAILURE);
+    else
+        exec_ft_ping(&core);
+    // printf("-> |%s|\n", core.target_ipv4);
+    // debug_opts_args(core.opts_args);
+    free_core(&core);
+    return (EXIT_SUCCESS);
 }

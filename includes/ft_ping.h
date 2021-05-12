@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/05/01 17:05:48 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/05/08 17:44:18 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,10 @@
 typedef struct                  s_core
 {
     t_opts_args                 *opts_args;
-    struct addrinfo             *res;
+    int                         sockfd;
     char                        target_ipv4[INET_ADDRSTRLEN];
+
+    struct sockaddr_in          *sin;
 }                               t_core;
 
 #endif
