@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:33:32 by arsciand          #+#    #+#             */
-/*   Updated: 2021/05/08 19:25:05 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/05/16 16:44:38 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -209,8 +209,10 @@ static uint8_t init_core(t_core *core)
 {
     struct  addrinfo    hints;
     struct  addrinfo    *res    = NULL;
-    struct  addrinfo    *test   = NULL;
+    char                buff_ipv4[INET_ADDRSTRLEN];
     int8_t              status  = 0;
+    // const int val=1;
+
 
     /* Preparing getaddrinfo struct */
     ft_memset(&hints, 0, sizeof(struct addrinfo));
@@ -224,20 +226,19 @@ static uint8_t init_core(t_core *core)
         != SUCCESS)
         error_handler(core, status);
 
-    if ((status = (int8_t)getaddrinfo(
-        core->opts_args->args[0], NULL, &hints, &test))
-        != SUCCESS)
-        error_handler(core, status);
-
     /**/
     #pragma clang diagnostic ignored "-Wcast-align"
     /**/
 
     /* Filling up ipv4 stringg addresse */
     if (!(inet_ntop(res->ai_family,
-        &((struct sockaddr_in *)test->ai_addr)->sin_addr, core->target_ipv4,
-        sizeof(core->target_ipv4))))
+        &((struct sockaddr_in *)res->ai_addr)->sin_addr, buff_ipv4,
+        sizeof(buff_ipv4))))
         exit_routine(core, FAILURE);
+    if (!(core->target_ipv4 = ft_strdup(buff_ipv4)))
+        exit_routine(core, FAILURE);
+    printf("-> |%s|\n", core->target_ipv4);
+
 
     /* Creating raw socket */
     if ((core->sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1)
@@ -245,8 +246,15 @@ static uint8_t init_core(t_core *core)
         printf("socket(): ERROR: %s , errno %d\n -> s |%d|\n", strerror(errno), errno, core->sockfd);
         exit_routine(core, FAILURE);
     }
+//     if (setsockopt(core->sockfd,SOL_IP, SO_REUSEADDR,&val,sizeof(val)) == -1) {
+//     perror("setsockopt");
+//     exit(1);
+// }
+    // if ( setsockopt(core->sockfd, SOL_IP,IP_TTL, &val, sizeof(val)) != 0)
+    //     perror("Set TTL option");
 
-    /* Cleaning */
+
+    // /* Cleaning */
     for (struct addrinfo *tmp = NULL; res; res = tmp)
     {
         tmp = res->ai_next;
@@ -255,33 +263,112 @@ static uint8_t init_core(t_core *core)
     return (SUCCESS);
 }
 
+unsigned short checksum(void *b, int len)
+{
+    unsigned short *buf = b;
+    unsigned int sum=0;
+    unsigned short result;
+
+    for ( sum = 0; len > 1; len -= 2 )
+        sum += *buf++;
+    if ( len == 1 )
+        sum += *(unsigned char*)buf;
+    sum = (sum >> 16) + (sum & 0xFFFF);
+    sum += (sum >> 16);
+    result = ~sum;
+    return result;
+}
+
+void print_bytes(int bytes, void *msg)
+{
+    for ( int i = 0; i < bytes; i++ )
+    {
+        if ( !(i & 15) )
+            printf("\n%04X:  ", i);
+        printf("%02X ", ((unsigned char*)msg)[i]);
+    }
+    printf("\n");
+}
+
+#include <fcntl.h>
 uint8_t         exec_ft_ping(t_core *core)
 {
+    // const int val=255;
+
     struct sockaddr_storage target_addr;
     struct msghdr           target_msg;
+    struct iovec		    iov[1];
     ssize_t                 bytes_sent          = 0;
     ssize_t                 bytes_received      = 0;
-    char                    msg[12]             = "Yo Google !";
+    size_t                  i                   = 1;
+    // char                    msg[12]             = "Yo Google !";
+
+    int pid = getpid();
 
     ft_memset(&target_addr, 0, sizeof(struct sockaddr_storage));
-    ft_memset(&target_msg, 0, sizeof(struct msghdr));
-    bytes_sent = sendto(core->sockfd, msg, 64, 0, (struct sockaddr *)&target_addr, sizeof(struct sockaddr_storage));
-    if (bytes_sent == -1)
+    int sd = socket(PF_INET, SOCK_RAW, 1);
+    if ( sd < 0 )
     {
-        printf("sendto(): ERROR: %s , errno %d\n -> s |%zd|\n", strerror(errno), errno, bytes_sent);
+        perror("socket");
+        return (FAILURE);
     }
-    printf("BYTES_SENT : %zd\n", bytes_sent);
-    while (1) {
-        bytes_received = recvmsg(core->sockfd, &target_msg, MSG_DONTWAIT);
-        printf("recvmsg(): ERROR: %s , errno %d\n -> s |%zd|\n", strerror(errno), errno, bytes_received);
+    while (i < 10)
+    {
+        printf("1IPV4 -> |%s|\n", core->target_ipv4);
+        printf("SOCKETFD-> |%d|\n", sd);
+
+        /* Forge packet */
+        ft_memset(&core->packet, 0, sizeof(t_icmp_packet_v4));
+        ft_memset(&core->packet.msg, 0, PACKET_SIZE - sizeof(struct icmphdr));
+        ft_memset(&core->packet.header, 0, sizeof(struct icmphdr));
+        core->packet.header.type = ICMP_ECHO;
+        core->packet.header.un.echo.sequence = i;
+        // ft_strcpy(core->packet.msg, "Hello, this is my IMCP payload. ft_ping - acuD1.......d");
+        uint64_t		j;
+        j = 0;
+        while (j < 56)
+            core->packet.msg[j++] = 0x42;
+        core->packet.msg[j] = '\0';
+        printf("2IPV4 -> |%s|\n", core->target_ipv4);
+
+
+        core->packet.header.un.echo.id = pid;
+        core->packet.header.checksum = checksum(&core->packet, sizeof(core->packet));
+
+        ft_memset(&target_msg, 0, sizeof(struct msghdr));
+        ft_memset(&iov, 0, sizeof(struct iovec));
+        iov[0].iov_len = 1500;
+        iov[0].iov_base = (char *)core->packet.msg;
+        target_msg.msg_iov = iov;
+        target_msg.msg_iovlen = 1;
+        target_msg.msg_name = NULL;
+        target_msg.msg_namelen = 0;
+        target_msg.msg_flags = 0;
+
+        printf("3IPV4 -> |%s|\n", core->target_ipv4);
+
+        /* SEND PACKET */
+        bytes_sent = sendto(sd, &core->packet, sizeof(core->packet), 0, (struct sockaddr *)&target_addr, sizeof(struct sockaddr_storage));
+        if (bytes_sent == -1)
+            printf("sendto(): ERROR: %s , errno %d\n -> s |%zd|\n", strerror(errno), errno, bytes_sent);
+        printf("BYTES_SENT : %zd\n", bytes_sent);
+        print_bytes(bytes_sent, core->packet.msg);
+
+        printf("4IPV4 -> |%s|\n", core->target_ipv4);
+
+        /* RECEIVED PACKET */
+        bytes_received = recvmsg(sd, &target_msg, 0x40);
+        printf("6IPV4 -> |%s|\n", core->target_ipv4);
+        printf("BYTES_RECEIVED : %zd\n", bytes_received);
         if (bytes_received > 0)
-        {
-            printf("ok\n");
-            break ;
-        }
-        break;
+            print_bytes(bytes_received, target_msg.msg_iov->iov_base);
+        else if (bytes_received == - 1)
+            printf("recvmsg(): ERROR: %s , errno %d\n -> s |%zd|\n", strerror(errno), errno, bytes_received);
+        printf("5IPV4 -> |%s|\n", core->target_ipv4);
+        sleep(1);
+        i++;
     }
-    printf("BYTES_RECEIVED : %zd | %d\n", bytes_received, target_msg.msg_flags);
+
     return (SUCCESS);
 }
 
@@ -304,7 +391,7 @@ int             main(int argc, char *argv[])
         exit_routine(&core, FAILURE);
     else
         exec_ft_ping(&core);
-    // printf("-> |%s|\n", core.target_ipv4);
+    printf("-> |%s|\n", core.target_ipv4);
     // debug_opts_args(core.opts_args);
     free_core(&core);
     return (EXIT_SUCCESS);
