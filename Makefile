@@ -75,6 +75,8 @@ L_PATH				=	libft/
 
 CORE				=	core/
 DB					=	db/
+SIGNALS				= 	signals/
+DISPLAY				=	display/
 
 # Add previous custom dir with $(O_PATH){custom dir} to PATH varriable
 
@@ -82,10 +84,19 @@ PATHS				+=	$(B_PATH)
 PATHS				+=	$(O_PATH)
 PATHS				+=	$(O_PATH)$(CORE)
 PATHS				+=	$(O_PATH)$(DB)
+PATHS				+=	$(O_PATH)$(DISPLAY)
+PATHS				+=	$(O_PATH)$(SIGNALS)
 
 # Files
 
+SRC					+= $(S_PATH)$(CORE)exec_ft_ping.c
 SRC					+= $(S_PATH)$(CORE)main.c
+SRC					+= $(S_PATH)$(CORE)memory.c
+SRC					+= $(S_PATH)$(CORE)opts_args.c
+SRC					+= $(S_PATH)$(DISPLAY)errors.c
+SRC					+= $(S_PATH)$(DISPLAY)usage.c
+SRC					+= $(S_PATH)$(SIGNALS)signal_exit.c
+SRC					+= $(S_PATH)$(SIGNALS)signal_send_packet.c
 
 # Headers
 
