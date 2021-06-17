@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:33:32 by arsciand          #+#    #+#             */
-/*   Updated: 2021/06/14 12:14:07 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/06/16 12:47:16 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,9 @@ t_core  *g_core = NULL;
 static uint8_t init_core(void)
 {
     struct  addrinfo    hints;
-    struct  addrinfo    *res    = NULL;
+    struct  addrinfo    *res                        = NULL;
     char                buff_ipv4[INET_ADDRSTRLEN];
-    int8_t              status  = 0;
+    int8_t              status                      = 0;
 
     ft_memset(&hints, 0, sizeof(struct addrinfo));
     ft_memset(&buff_ipv4, 0, INET_ADDRSTRLEN);
@@ -68,6 +68,13 @@ static uint8_t init_core(void)
         exit_routine(FAILURE);
     }
 
+    if (setsockopt(g_core->sockfd, IPPROTO_IP, IP_HDRINCL,
+        &g_core->conf.custom_iphdr, sizeof( g_core->conf.custom_iphdr)) != SUCCESS)
+    {
+        printf("setsockopt(): ERROR: %s , errno %d\n", strerror(errno), errno);
+        exit_routine(FAILURE);
+    }
+
     /* Cleaning */
     for (struct addrinfo *tmp = NULL; res; res = tmp)
     {
@@ -103,9 +110,10 @@ int             main(int argc, char *argv[])
         exit_routine(FAILURE);
 
     /* Default conf */
-    g_core->conf.mtu = MTU;
-    g_core->conf.packet_size = PACKET_SIZE;
-    g_core->conf.ttl = TTL;
+    g_core->conf.custom_iphdr   = TRUE;
+    g_core->conf.mtu            = MTU;
+    g_core->conf.packet_size    = PACKET_SIZE;
+    g_core->conf.ttl            = TTL;
 
     if (get_opts_args_handler(argc, argv) != SUCCESS)
         exit_routine(FAILURE);

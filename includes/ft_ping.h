@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/06/16 10:46:51 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/06/17 11:39:04 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,19 +45,26 @@ int       errno;
 # define UNALLOWED_OPT          1ULL << 63
 # define V_OPT                  1ULL << ('v' - 97)
 # define H_OPT                  1ULL << ('h' - 97)
-# define PACKET_SIZE            64
+# define PACKET_SIZE            84
+# define IPHDR_SIZE             20
 # define TTL                    64
 # define MTU                    1500
 
+typedef struct                  s_icmp_area
+{
+    struct icmphdr              icmphdr;
+    char                        message[PACKET_SIZE - sizeof(struct icmphdr) - IPHDR_SIZE];
+}                               t_icmp_area;
+
 typedef struct                  s_icmp_packet_v4
 {
-    // struct iphdr                iphdr;
-    struct icmphdr              header;
-    char                        msg[PACKET_SIZE - sizeof(struct icmphdr)]; // - sizeof(struct iphdr)];
+    struct  iphdr               iphdr;
+    t_icmp_area                 icmp_area;
 }                               t_icmp_packet_v4;
 
 typedef struct                  s_conf
 {
+    int                         custom_iphdr;
     int                         mtu;
     int                         packet_size;
     int                         ttl;
@@ -72,6 +79,7 @@ typedef struct                  s_core
     volatile sig_atomic_t       sig_int;
     char                        *target_ipv4;
     uint16_t                    sequence;
+    uint16_t                    errors;
     pid_t                       pid;
     struct timeval              start;
     struct timeval              end;
