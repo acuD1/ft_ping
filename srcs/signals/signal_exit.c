@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/25 16:25:49 by arsciand          #+#    #+#             */
-/*   Updated: 2021/06/14 11:45:31 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/06 14:30:13 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,5 @@
 void    signal_exit(int signo)
 {
     (void)signo;
-    g_core->sig_int = TRUE;
-    exit_routine(SUCCESS);
+    g_ping_global->sig_int = TRUE;
 }

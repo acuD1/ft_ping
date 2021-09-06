@@ -1,24 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   memory.c                                           :+:      :+:    :+:   */
+/*   init.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/05/25 16:35:54 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/06 14:35:00 by arsciand         ###   ########.fr       */
+/*   Created: 2021/09/06 13:37:02 by arsciand          #+#    #+#             */
+/*   Updated: 2021/09/06 14:32:25 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_ping.h"
 
-void    free_ping(t_ping *ping)
-{
-    (void)ping;
-}
+t_ping_global   *g_ping_global = NULL;
 
-void __attribute__ ((noreturn)) exit_routine(t_ping *ping, int8_t status)
+void    init_ping(t_ping *ping)
 {
-    free_ping(ping);
-    exit(status);
+    if (!(g_ping_global = ft_memalloc(sizeof(t_ping_global))))
+        exit_routine(ping, FAILURE);
+    ft_memset(ping, 0, sizeof(t_ping));
+    ping->conf.custom_iphdr   = TRUE;
+    ping->conf.mtu            = MTU;
+    ping->conf.packet_size    = PACKET_SIZE;
+    ping->conf.ttl            = TTL;
 }

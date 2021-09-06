@@ -90,9 +90,11 @@ PATHS				+=	$(O_PATH)$(SIGNALS)
 # Files
 
 SRC					+= $(S_PATH)$(CORE)exec_ft_ping.c
+SRC					+= $(S_PATH)$(CORE)init.c
 SRC					+= $(S_PATH)$(CORE)main.c
 SRC					+= $(S_PATH)$(CORE)memory.c
 SRC					+= $(S_PATH)$(CORE)opts_args.c
+SRC					+= $(S_PATH)$(CORE)resolve.c
 SRC					+= $(S_PATH)$(DISPLAY)errors.c
 SRC					+= $(S_PATH)$(DISPLAY)usage.c
 SRC					+= $(S_PATH)$(SIGNALS)signal_exit.c
@@ -101,10 +103,11 @@ SRC					+= $(S_PATH)$(SIGNALS)signal_send_packet.c
 # Headers
 
 HDR					+=	libft.h
+HDR					+=	ft_ping.h
 
 # std
 
-STD					+=	gnu17
+# STD					+=	gnu17
 
 
 ###############################################################################
@@ -120,7 +123,7 @@ vpath %.h $(H_PATH)
 # Variables
 
 DEBUG				=
-CFLAGS				=	-Wall -Wextra -Werror -std=$(STD)
+CFLAGS				=	-Wall -Wextra -Werror #-std=$(STD)
 ifeq ($(DEBUG), g)
 	CFLAGS			=	-g
 else ifeq ($(DEBUG), fsanitize)
