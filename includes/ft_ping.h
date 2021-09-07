@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/06 14:39:35 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/07 12:08:33 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,16 +32,13 @@
 
 # define errno                  (*__errno_location ())
 
-# define FAILURE                2
-# define SUCCESS                0
-# define FALSE                  0
-# define TRUE                   1
 # define STRINGIZER(arg)        #arg
 # define STR_VALUE(arg)         STRINGIZER(arg)
 # define BUILD_VERSION_STRING   STR_VALUE(BUILDV)
 # define BUILD_RELEASE_STRING   STR_VALUE(BUILDR)
 # define BUILD_PATCH_STRING     STR_VALUE(BUILDP)
 # define BUILD_DATE_STRING      STR_VALUE(DATE)
+
 # define ALLOWED_OPT            "vh"
 # define ALLOWED_OPT_ARG        NULL
 # define ALLOWED_OPT_TAB        NULL
@@ -49,29 +46,36 @@
 # define UNALLOWED_OPT          1ULL << 63
 # define V_OPT                  1ULL << ('v' - 97)
 # define H_OPT                  1ULL << ('h' - 97)
+
 # define PACKET_SIZE            84
 # define IPHDR_SIZE             20
+# define ICMPHDR_SIZE           8
 # define TTL                    64
 # define MTU                    1500
+
+# define SEND_PACKET            0x0001
+# define EXIT_PING              0x0002
 
 typedef struct                  s_icmp_area
 {
     struct icmphdr              icmphdr;
-    char                        message[PACKET_SIZE - sizeof(struct icmphdr) - IPHDR_SIZE];
+    char                        message[56];
 }                               t_icmp_area;
 
 typedef struct                  s_icmp_packet_v4
 {
-    struct  iphdr               iphdr;
+    struct iphdr                iphdr;
+    // char                        _PADDING(4);
     t_icmp_area                 icmp_area;
 }                               t_icmp_packet_v4;
 
 typedef struct                  s_conf
 {
     int                         custom_iphdr;
-    int                         mtu;
-    int                         packet_size;
-    int                         ttl;
+    // int                         mtu;
+    uint16_t                    packet_size;
+    uint8_t                      ttl;
+    char                        _PADDING(1);
 }                               t_conf;
 
 typedef struct                  s_ping_global
@@ -81,22 +85,21 @@ typedef struct                  s_ping_global
 
 typedef struct                  s_ping
 {
-    // t_opts_args                 *opts_args;
-    t_conf                      conf;
-    t_icmp_packet_v4            packet;
     int                         sockfd;
-    char                        *target_ipv4;
     uint16_t                    sequence;
     uint16_t                    errors;
     pid_t                       pid;
+    t_conf                      conf;
+    char                        _PADDING(4);
+    // t_icmp_packet_v4            packet;
     struct timeval              start;
     struct timeval              end;
     struct sockaddr_storage     target;
 }                               t_ping;
 
-extern  t_ping_global           *g_ping_global;
+extern volatile sig_atomic_t    g_ping;
 
-uint8_t                          exec_ft_ping(void);
+uint8_t                          exec_ping(t_ping *ping);
 void                             exit_routine(t_ping *ping, int8_t status);
 void                             getaddrinfo_error_handler(char *target, int status);
 void                             free_ping(t_ping *ping);
@@ -104,10 +107,12 @@ uint8_t                          set_opts_args(t_ping *ping, int argc, char **ar
 void                             print_unallowed_opt(t_opts_args *opts_args);
 void                             print_usage(void);
 void                             print_version(void);
-void                             signal_exit(int signo);
-void                             signal_send_packet(int signo);
 uint8_t                          resolve_target_ipv4(t_ping *ping, char *target);
 void                             init_ping(t_ping *ping);
+void                             print_init(t_ping *ping);
+void                             sig_handler(int signo);
+void                             send_packet(t_ping *ping, char *payload);
+void                             setup_socket(t_ping *ping);
 
 /* DEBUG */
 void                             print_bytes(int bytes, void *msg);

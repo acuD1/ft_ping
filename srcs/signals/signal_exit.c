@@ -6,14 +6,14 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/25 16:25:49 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/06 14:30:13 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/06 16:04:17 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_ping.h"
 
-void    signal_exit(int signo)
-{
-    (void)signo;
-    g_ping_global->sig_int = TRUE;
-}
+// void    signal_exit(int signo)
+// {
+//     (void)signo;
+//     g_ping_global->sig_int = TRUE;
+// }

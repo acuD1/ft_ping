@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:33:32 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/06 14:32:45 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/06 16:14:33 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,8 @@ int             main(int argc, char *argv[])
         fprintf(stderr, "ft_ping: socket: Operation not permitted\n");
         exit_routine(&ping, FAILURE);
     }
-    // else
-    //     exec_ft_ping();
+    else
+        exec_ping(&ping);
 
     free_ping(&ping);
     return (EXIT_SUCCESS);

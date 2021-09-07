@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/25 16:43:47 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/06 14:39:22 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/06 15:29:39 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ uint8_t         set_opts_args(t_ping *ping, int argc, char **argv)
         print_usage();
         return (set_opts_args_failure(&opts_args));
     }
-    if (resolve_target_ipv4(ping,  get_arg(&opts_args.args, POSITION(0))->arg) != SUCCESS)
+    if (resolve_target_ipv4(ping, get_arg(&opts_args.args, POSITION(0))->arg) != SUCCESS)
         return (set_opts_args_failure(&opts_args));
     free_opts_args(&opts_args);
     return (SUCCESS);
