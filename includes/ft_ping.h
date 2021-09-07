@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/07 12:08:33 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/07 15:04:54 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,18 +56,18 @@
 # define SEND_PACKET            0x0001
 # define EXIT_PING              0x0002
 
-typedef struct                  s_icmp_area
-{
-    struct icmphdr              icmphdr;
-    char                        message[56];
-}                               t_icmp_area;
+// typedef struct                  s_icmp_area
+// {
+//     struct icmphdr              icmphdr;
+//     char                        message[56];
+// }                               t_icmp_area;
 
-typedef struct                  s_icmp_packet_v4
-{
-    struct iphdr                iphdr;
-    // char                        _PADDING(4);
-    t_icmp_area                 icmp_area;
-}                               t_icmp_packet_v4;
+// typedef struct                  s_icmp_packet_v4
+// {
+//     struct iphdr                iphdr;
+//     // char                        _PADDING(4);
+//     t_icmp_area                 icmp_area;
+// }                               t_icmp_packet_v4;
 
 typedef struct                  s_conf
 {
@@ -111,7 +111,7 @@ uint8_t                          resolve_target_ipv4(t_ping *ping, char *target)
 void                             init_ping(t_ping *ping);
 void                             print_init(t_ping *ping);
 void                             sig_handler(int signo);
-void                             send_packet(t_ping *ping, char *payload);
+void                             send_packet(t_ping *ping, char *packet);
 void                             setup_socket(t_ping *ping);
 
 /* DEBUG */

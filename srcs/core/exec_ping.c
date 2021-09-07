@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/29 14:30:22 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/07 11:45:35 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/07 15:04:24 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,35 +64,33 @@ uint8_t     exec_ping(t_ping *ping)
     // struct sockaddr_storage tmp;
     // struct msghdr           target_msg;
     // struct iovec            iov[1];
-    size_t      payload_size    = ping->conf.packet_size - IPHDR_SIZE - ICMPHDR_SIZE;
-    char        *payload        = NULL;
+    char        *packet        = NULL;
 
-    if (!(payload = ft_memalloc(payload_size)))
+    if (!(packet = ft_memalloc(ping->conf.packet_size)))
         exit_routine(ping, FAILURE);
 
     print_init(ping);
     alarm(1);
 
     setup_socket(ping);
-    send_packet(ping, payload);
 
-    // while (1)
-    // {
-    //     if (g_ping & SEND_PACKET)
-    //     {
-    //         dprintf(STDERR_FILENO, "SEND_PACKET !\n");
-    //         send_packet(ping, payload);
-    //         g_ping = 0;
-    //         alarm(1);
-    //     }
-    //     if (g_ping & EXIT_PING)
-    //     {
-    //         dprintf(STDERR_FILENO, "EXIT_PING\n");
-    //         break ;
-    //     }
-    //     // if (retrieve_response(ping) != SUCCESS)
-    //     //     exit_routine(ping, FAILURE);
-    // }
+    while (1)
+    {
+        if (g_ping & SEND_PACKET)
+        {
+            dprintf(STDERR_FILENO, "SEND_PACKET !\n");
+            send_packet(ping, packet);
+            g_ping = 0;
+            alarm(1);
+        }
+        if (g_ping & EXIT_PING)
+        {
+            dprintf(STDERR_FILENO, "EXIT_PING\n");
+            break ;
+        }
+        // if (retrieve_response(ping) != SUCCESS)
+        //     exit_routine(ping, FAILURE);
+    }
     // fetch_responses(ping);
 
 

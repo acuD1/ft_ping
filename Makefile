@@ -100,6 +100,7 @@ SRC					+= $(S_PATH)$(CORE)signals.c
 SRC					+= $(S_PATH)$(CORE)socket.c
 SRC					+= $(S_PATH)$(DISPLAY)errors.c
 SRC					+= $(S_PATH)$(DISPLAY)usage.c
+SRC					+= $(S_PATH)$(DISPLAY)debug.c
 SRC					+= $(S_PATH)$(SIGNALS)signal_exit.c
 SRC					+= $(S_PATH)$(SIGNALS)signal_send_packet.c
 
