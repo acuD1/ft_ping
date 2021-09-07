@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/06 16:35:34 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/07 15:06:21 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/07 16:36:36 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,10 +49,17 @@ static void     setup_iphdr(t_ping *ping, void *packet)
     iphdr->daddr        = ((struct sockaddr_in *)&ping->target)->sin_addr.s_addr;
 }
 
-static void     setup_payload(t_ping *ping, char *packet)
+static void     setup_payload(t_ping *ping, void *packet)
 {
-    for (size_t i = 0; i < ping->conf.packet_size - IPHDR_SIZE - ICMPHDR_SIZE - 1; i++)
-        packet[i] = 0x42;
+    char *payload = (char *)packet;
+
+    for (size_t i = 0; i < ping->conf.packet_size - IPHDR_SIZE - ICMPHDR_SIZE - sizeof(struct timeval); i++)
+        payload[i] = 0x42;
+}
+
+static void     setup_timeval(t_ping *ping, void *packet)
+{
+    gettimeofday_handler(ping, packet);
 }
 
 static void     setup_icmphdr(t_ping *ping, void *packet)
@@ -73,10 +80,12 @@ void    send_packet(t_ping *ping, char *packet)
     ft_memset(packet, 0, ping->conf.packet_size);
     setup_iphdr(ping, packet);
     setup_payload(ping, packet + IPHDR_SIZE + ICMPHDR_SIZE);
+    setup_timeval(ping, packet + ping->conf.packet_size - sizeof(struct timeval));
     setup_icmphdr(ping, packet + IPHDR_SIZE);
 
     dprintf(STDERR_FILENO, "[DEBUG] packet_size |%d|\n", ping->conf.packet_size);
     print_bytes(ping->conf.packet_size, packet);
+    print_time(packet + ping->conf.packet_size - sizeof(struct timeval));
 
     bytes_sent = sendto(ping->sockfd, packet, ping->conf.packet_size, MSG_DONTWAIT,
                     (struct sockaddr_in *)&ping->target, sizeof(struct sockaddr_in));

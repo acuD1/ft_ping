@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/07 15:04:54 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/07 16:35:19 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,10 +88,7 @@ typedef struct                  s_ping
     int                         sockfd;
     uint16_t                    sequence;
     uint16_t                    errors;
-    pid_t                       pid;
     t_conf                      conf;
-    char                        _PADDING(4);
-    // t_icmp_packet_v4            packet;
     struct timeval              start;
     struct timeval              end;
     struct sockaddr_storage     target;
@@ -113,8 +110,10 @@ void                             print_init(t_ping *ping);
 void                             sig_handler(int signo);
 void                             send_packet(t_ping *ping, char *packet);
 void                             setup_socket(t_ping *ping);
+void                             gettimeofday_handler(t_ping *ping, void *time);
 
 /* DEBUG */
 void                             print_bytes(int bytes, void *msg);
+void                             print_time(void *time);
 
 #endif

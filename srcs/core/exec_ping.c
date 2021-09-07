@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/29 14:30:22 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/07 15:04:24 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/07 16:42:49 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ uint8_t     exec_ping(t_ping *ping)
     // struct sockaddr_storage tmp;
     // struct msghdr           target_msg;
     // struct iovec            iov[1];
-    char        *packet        = NULL;
+    char *packet    = NULL;
 
     if (!(packet = ft_memalloc(ping->conf.packet_size)))
         exit_routine(ping, FAILURE);
@@ -78,7 +78,7 @@ uint8_t     exec_ping(t_ping *ping)
     {
         if (g_ping & SEND_PACKET)
         {
-            dprintf(STDERR_FILENO, "SEND_PACKET !\n");
+            dprintf(STDERR_FILENO, "---\n[DEBUG] SEND_PACKET ! |%hu|\n", ping->sequence);
             send_packet(ping, packet);
             g_ping = 0;
             alarm(1);
@@ -91,6 +91,7 @@ uint8_t     exec_ping(t_ping *ping)
         // if (retrieve_response(ping) != SUCCESS)
         //     exit_routine(ping, FAILURE);
     }
+    ft_strdel(&packet);
     // fetch_responses(ping);
 
 

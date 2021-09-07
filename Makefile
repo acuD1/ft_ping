@@ -75,6 +75,7 @@ L_PATH				=	libft/
 
 CORE				=	core/
 DB					=	db/
+TOOLS				=	tools/
 SIGNALS				= 	signals/
 DISPLAY				=	display/
 
@@ -84,6 +85,7 @@ PATHS				+=	$(B_PATH)
 PATHS				+=	$(O_PATH)
 PATHS				+=	$(O_PATH)$(CORE)
 PATHS				+=	$(O_PATH)$(DB)
+PATHS				+=	$(O_PATH)$(TOOLS)
 PATHS				+=	$(O_PATH)$(DISPLAY)
 PATHS				+=	$(O_PATH)$(SIGNALS)
 
@@ -101,8 +103,7 @@ SRC					+= $(S_PATH)$(CORE)socket.c
 SRC					+= $(S_PATH)$(DISPLAY)errors.c
 SRC					+= $(S_PATH)$(DISPLAY)usage.c
 SRC					+= $(S_PATH)$(DISPLAY)debug.c
-SRC					+= $(S_PATH)$(SIGNALS)signal_exit.c
-SRC					+= $(S_PATH)$(SIGNALS)signal_send_packet.c
+SRC					+= $(S_PATH)$(TOOLS)time.c
 
 # Headers
 
