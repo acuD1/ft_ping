@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/06 16:35:34 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/07 16:36:36 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/08 17:20:49 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,11 +64,10 @@ static void     setup_timeval(t_ping *ping, void *packet)
 
 static void     setup_icmphdr(t_ping *ping, void *packet)
 {
-    static uint16_t id          = 42000;
     struct icmphdr *icmphdr     = (struct icmphdr *)packet;
 
     icmphdr->type               = ICMP_ECHO;
-    icmphdr->un.echo.id         = htons(id++);
+    icmphdr->un.echo.id         = htons((uint16_t)ping->conf.pid);
     icmphdr->un.echo.sequence   = htons(ping->sequence++);
     icmphdr->checksum           = in_cksum(packet, ping->conf.packet_size - IPHDR_SIZE);
 }
@@ -83,9 +82,12 @@ void    send_packet(t_ping *ping, char *packet)
     setup_timeval(ping, packet + ping->conf.packet_size - sizeof(struct timeval));
     setup_icmphdr(ping, packet + IPHDR_SIZE);
 
-    dprintf(STDERR_FILENO, "[DEBUG] packet_size |%d|\n", ping->conf.packet_size);
-    print_bytes(ping->conf.packet_size, packet);
-    print_time(packet + ping->conf.packet_size - sizeof(struct timeval));
+    #ifdef DEBUG
+        dprintf(STDERR_FILENO, "---\n[DEBUG] SEND_PACKET ! |%hu|\n", ping->sequence);
+        print_bytes(ping->conf.packet_size, packet);
+        print_time(packet + ping->conf.packet_size - sizeof(struct timeval));
+    #endif
+
 
     bytes_sent = sendto(ping->sockfd, packet, ping->conf.packet_size, MSG_DONTWAIT,
                     (struct sockaddr_in *)&ping->target, sizeof(struct sockaddr_in));
@@ -93,4 +95,5 @@ void    send_packet(t_ping *ping, char *packet)
     {
         ping->errors++;
     }
+    alarm(1);
 }

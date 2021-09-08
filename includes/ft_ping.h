@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/07 16:35:19 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/08 17:17:16 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,28 +51,16 @@
 # define IPHDR_SIZE             20
 # define ICMPHDR_SIZE           8
 # define TTL                    64
-# define MTU                    1500
+# define MAX_MTU                1500
+# define START_SEQUENCE         1
 
 # define SEND_PACKET            0x0001
 # define EXIT_PING              0x0002
 
-// typedef struct                  s_icmp_area
-// {
-//     struct icmphdr              icmphdr;
-//     char                        message[56];
-// }                               t_icmp_area;
-
-// typedef struct                  s_icmp_packet_v4
-// {
-//     struct iphdr                iphdr;
-//     // char                        _PADDING(4);
-//     t_icmp_area                 icmp_area;
-// }                               t_icmp_packet_v4;
-
 typedef struct                  s_conf
 {
     int                         custom_iphdr;
-    // int                         mtu;
+    pid_t                       pid;
     uint16_t                    packet_size;
     uint8_t                      ttl;
     char                        _PADDING(1);
@@ -89,6 +77,7 @@ typedef struct                  s_ping
     uint16_t                    sequence;
     uint16_t                    errors;
     t_conf                      conf;
+    char                        _PADDING(4);
     struct timeval              start;
     struct timeval              end;
     struct sockaddr_storage     target;

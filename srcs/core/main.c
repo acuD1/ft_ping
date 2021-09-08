@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:33:32 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/06 16:14:33 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/08 17:18:56 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ int             main(int argc, char *argv[])
     /* Check if ft_ping executed as root */
     if (getuid())
     {
-        fprintf(stderr, "ft_ping: socket: Operation not permitted\n");
+        dprintf(STDERR_FILENO, "ft_ping: socket: Operation not permitted\n");
         exit_routine(&ping, FAILURE);
     }
     else

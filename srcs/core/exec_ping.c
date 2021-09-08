@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/29 14:30:22 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/07 16:42:49 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/08 17:50:50 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,82 +56,113 @@
 //     // printf("Analysing ...\n");
 // }
 
-uint8_t     exec_ping(t_ping *ping)
+static uint8_t packet_found(ssize_t payload_size, void *payload, uint16_t sequence)
 {
-    // char                    packet_buffer[g_core->conf.mtu];
-    // char                    control_buffer[1024];
-    // ssize_t                 bytes_received = 0;
-    // struct sockaddr_storage tmp;
-    // struct msghdr           target_msg;
-    // struct iovec            iov[1];
-    char *packet    = NULL;
+    (void)payload_size;
+    (void)payload;
+    (void)sequence;
+    return (SUCCESS);
+}
+
+static void     analyse_packet(t_ping *ping, ssize_t bytes_received, struct timeval *time_received, void *buffer)
+{
+    (void)ping;
+    (void)bytes_received;
+    (void)time_received;
+    struct icmphdr *response = (struct icmphdr *)(buffer);
+
+    #ifdef DEBUG
+        dprintf(STDERR_FILENO, "[DEBUG] icmphdr->type |%s|\n", response->type == ICMP_ECHOREPLY ? "ICMP_REPLY" : ft_itoa(response->type));
+    #endif
+
+    if (response->type == ICMP_ECHOREPLY && htons(response->un.echo.id) == ping->conf.pid && htons(response->un.echo.sequence) <= ping->sequence
+        && packet_found(bytes_received - (ssize_t)(IPHDR_SIZE - ICMPHDR_SIZE), (char *)buffer + ICMPHDR_SIZE, response->un.echo.sequence) == SUCCESS)
+    {
+        #ifdef DEBUG
+            dprintf(STDERR_FILENO, "[DEBUG] icmphdr->un.ech.sequence |%hu|\n", htons(response->un.echo.sequence));
+            dprintf(STDERR_FILENO, "[DEBUG] icmphdr->un.ech.id |%hu|\n", htons(response->un.echo.id));
+            print_bytes((int)bytes_received - IPHDR_SIZE - ICMPHDR_SIZE, (char *)buffer + ICMPHDR_SIZE);
+            print_time((char *)buffer + ((uint64_t)bytes_received - sizeof(struct timeval) - IPHDR_SIZE));
+            dprintf(STDERR_FILENO, "[DEBUG] TIME SEC |%lu| USEC |%lu| (RECEIVED) \n", time_received->tv_sec, time_received->tv_usec);
+        #endif
+    }
+
+    #ifdef DEBUG
+        if (response->type != ICMP_ECHOREPLY || htons(response->un.echo.id) != ping->conf.pid || htons(response->un.echo.sequence) > ping->sequence)
+            dprintf(STDERR_FILENO, "\n/!\\\n[DEBUG] Wrong packet !!!\n/!\\\n\n");
+    #endif
+}
+
+static void     retrieve_response(t_ping *ping)
+{
+    ssize_t                 bytes_received  = 0;
+    char                    buffer[MAX_MTU];
+    char                    control_buffer[1000];
+    struct sockaddr_storage tmp;
+    struct msghdr           msghdr;
+    struct iovec            msg_iov[1];
+    struct timeval          time_received;
+
+    ft_memset(&buffer, 0, sizeof(buffer));
+    ft_memset(&control_buffer, 0, sizeof(control_buffer));
+    ft_memset(&msghdr, 0, sizeof(msghdr));
+    ft_memset(&tmp, 0, sizeof(struct sockaddr_storage));
+    ft_memset(msg_iov, 0, sizeof(msg_iov));
+
+    msg_iov->iov_base   = buffer;
+    msg_iov->iov_len    = sizeof(buffer);
+    ft_memcpy(&tmp, &ping->target, sizeof(struct sockaddr_storage));
+    msghdr.msg_name = (struct sockaddr_in *)&tmp;
+    msghdr.msg_namelen = sizeof((struct sockaddr_in *)&tmp);
+    msghdr.msg_iov      = msg_iov;
+    msghdr.msg_iovlen   = 1;
+    msghdr.msg_flags    = 0;
+
+    bytes_received = recvmsg(ping->sockfd, &msghdr, MSG_DONTWAIT);
+    if (bytes_received != -1)
+    {
+        gettimeofday_handler(ping, &time_received);
+        #ifdef DEBUG
+            dprintf(STDERR_FILENO, "---\n[DEBUG] bytes_received |%zu|\n", bytes_received);
+            print_bytes((int)bytes_received, &buffer);
+        #endif
+
+        analyse_packet(ping, bytes_received, &time_received, buffer + IPHDR_SIZE);
+    }
+}
+
+uint8_t         exec_ping(t_ping *ping)
+{
+    char    *packet = NULL;
 
     if (!(packet = ft_memalloc(ping->conf.packet_size)))
         exit_routine(ping, FAILURE);
 
     print_init(ping);
-    alarm(1);
 
     setup_socket(ping);
 
+    send_packet(ping, packet);
     while (1)
     {
         if (g_ping & SEND_PACKET)
         {
-            dprintf(STDERR_FILENO, "---\n[DEBUG] SEND_PACKET ! |%hu|\n", ping->sequence);
             send_packet(ping, packet);
             g_ping = 0;
-            alarm(1);
         }
         if (g_ping & EXIT_PING)
         {
-            dprintf(STDERR_FILENO, "EXIT_PING\n");
+
+            #ifdef DEBUG
+                dprintf(STDERR_FILENO, "[DEBUG] EXIT_PING\n");
+            #endif
+
             break ;
         }
-        // if (retrieve_response(ping) != SUCCESS)
-        //     exit_routine(ping, FAILURE);
+        retrieve_response(ping);
+
     }
     ft_strdel(&packet);
     // fetch_responses(ping);
-
-
-    // send_packet(SIGALRM);
-
-    // while (1)
-    // {
-    //     ft_memset(&packet_buffer, 0, sizeof(g_core->conf.packet_size + sizeof(struct ip)));
-    //     ft_memset(&control_buffer, 0, sizeof(control_buffer));
-    //     ft_memset(&tmp, 0, sizeof(struct sockaddr_storage));
-    //     ft_memset(&target_msg, 0, sizeof(struct msghdr));
-    //     ft_memset(&iov, 0, sizeof(struct iovec));
-
-    //     /* Filling up msghdr structure */
-    //     iov[0].iov_len = sizeof(packet_buffer);
-    //     iov[0].iov_base = &packet_buffer;
-    //     target_msg.msg_iov = iov;
-    //     target_msg.msg_iovlen = 1;
-    //     ft_memcpy(&tmp, &g_core->target_addr, sizeof(struct sockaddr_storage));
-    //     target_msg.msg_name = (struct sockaddr_in *)&tmp;
-    //     target_msg.msg_namelen = sizeof((struct sockaddr_in *)&tmp);
-    //     target_msg.msg_flags = 0;
-    //     target_msg.msg_control = &control_buffer;
-    //     target_msg.msg_controllen = sizeof(control_buffer);
-    //     bytes_received = recvmsg(g_core->sockfd, &target_msg, 0);
-    //     if (bytes_received == -1)
-    //     {
-    //         printf("recvmsg(): ERROR: %s , errno %d\n -> s |%zd|\n", strerror(errno), errno, bytes_received);
-    //         exit_routine(FAILURE);
-    //     }
-
-    //     // if (is_owned_packet(packet_buffer))
-    //     // {
-    //         if (is_packet_valid(packet_buffer) == TRUE)
-    //         {
-    //             printf("seq: %d\n", g_core->sequence);
-    //             analyse_packet(packet_buffer, control_buffer, bytes_received);
-    //             printf("Reveived ...|%zu|\n\n", bytes_received);
-    //         }
-    //     // }
-    // }
     return (SUCCESS);
 }

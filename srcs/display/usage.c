@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/25 16:40:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/06 15:35:01 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/08 17:20:18 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,8 @@ void     print_unallowed_opt(t_opts_args *opts_args)
 
 void    print_init(t_ping *ping)
 {
-    struct sockaddr_in *tmp = (struct sockaddr_in *)&ping->target;
-    char            buff_ipv4[INET_ADDRSTRLEN];
+    struct sockaddr_in  *tmp = (struct sockaddr_in *)&ping->target;
+    char                buff_ipv4[INET_ADDRSTRLEN];
 
     ft_memset(&buff_ipv4, 0, sizeof(buff_ipv4));
 
