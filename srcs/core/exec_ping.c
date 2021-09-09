@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/29 14:30:22 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/09 15:59:46 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/09 17:40:35 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,14 +42,6 @@ static uint8_t  check_timeval(void *timeval, t_lst *packet)
     t_packet_data   *tmp_packet = (t_packet_data *)packet->content;
     struct timeval  tmp_timeval = *(struct timeval *)timeval;
 
-    #ifdef DEBUG
-        print_bytes(16, timeval);
-        dprintf(STDERR_FILENO, "[DEBUG] tmp_packet->time_sent.tv_sec |%ld|\n", tmp_packet->time_sent.tv_sec);
-        dprintf(STDERR_FILENO, "[DEBUG] tmp_packet->time_sent.tv_usec |%ld|\n", tmp_packet->time_sent.tv_usec);
-        dprintf(STDERR_FILENO, "[DEBUG] tmp_timeval->tv_sec |%ld|\n", tmp_timeval.tv_sec);
-        dprintf(STDERR_FILENO, "[DEBUG] tmp_timeval->tv_usec |%ld|\n", tmp_timeval.tv_usec);
-    #endif
-
     if ((tmp_timeval.tv_sec != tmp_packet->time_sent.tv_sec) || (tmp_timeval.tv_usec != tmp_packet->time_sent.tv_usec))
         return (FAILURE);
 
@@ -74,10 +66,11 @@ static t_lst    *validate_packet(t_ping *ping, void *payload, ssize_t payload_si
     return (packet);
 }
 
-static void     analyse_packet(t_ping *ping, ssize_t icmp_area_size, struct timeval *time_received, void *icmp_area)
+static t_packet_data     *analyse_packet(t_ping *ping, ssize_t icmp_area_size, struct timeval *time_received, void *icmp_area)
 {
-    t_lst           *validated_packet   = NULL;
-    struct icmphdr  *response           = (struct icmphdr *)(icmp_area);
+    t_lst           *validated_packet       = NULL;
+    t_packet_data   *validated_packet_data  = NULL;
+    struct icmphdr  *response               = (struct icmphdr *)(icmp_area);
 
     #ifdef DEBUG
         dprintf(STDERR_FILENO, "[DEBUG] icmphdr->type |%s|\n", response->type == ICMP_ECHOREPLY ? "ICMP_REPLY" : ft_itoa(response->type));
@@ -86,24 +79,22 @@ static void     analyse_packet(t_ping *ping, ssize_t icmp_area_size, struct time
     if (response->type == ICMP_ECHOREPLY
         && htons(response->un.echo.id) == ping->conf.pid
         && htons(response->un.echo.sequence) <= ping->sequence)
-
+    {
         #ifdef DEBUG
             dprintf(STDERR_FILENO, "[DEBUG] icmphdr->un.ech.sequence |%hu|\n", htons(response->un.echo.sequence));
             dprintf(STDERR_FILENO, "[DEBUG] icmphdr->un.ech.id |%hu|\n", htons(response->un.echo.id));
-            print_bytes((int)icmp_area_size, icmp_area);
+            // print_bytes((int)icmp_area_size, icmp_area);
             // print_time((char *)icmp_area + ((uint64_t)icmp_area_size - sizeof(struct timeval) - IPHDR_SIZE));
             dprintf(STDERR_FILENO, "[DEBUG] TIME SEC |%lu| USEC |%lu| (RECEIVED) \n", time_received->tv_sec, time_received->tv_usec);
         #endif
-    {
-        // ssize_t delta_timeval_buffer =  bytes_received - (ssize_t)(ICMPHDR_SIZE + sizeof(struct timeval));
+
         if (!(validated_packet = validate_packet(ping, (char *)icmp_area + ICMPHDR_SIZE, icmp_area_size - ICMPHDR_SIZE, htons(response->un.echo.sequence))))
-        {
-            // process_packet()
-            dprintf(STDERR_FILENO, "NOT FOUND !\n");
-        }
+            return (NULL);
         else
         {
-            dprintf(STDERR_FILENO, "Validaded !\n");
+            validated_packet_data = (t_packet_data *)validated_packet->content;
+            ft_memcpy(&validated_packet_data->time_received, time_received, sizeof(struct timeval));
+            validated_packet_data->status |= PACKET_RECEIVED;
         }
     }
 
@@ -111,24 +102,22 @@ static void     analyse_packet(t_ping *ping, ssize_t icmp_area_size, struct time
         if (response->type != ICMP_ECHOREPLY || htons(response->un.echo.id) != ping->conf.pid || htons(response->un.echo.sequence) > ping->sequence)
             dprintf(STDERR_FILENO, "\n/!\\\n[DEBUG] Wrong packet !!!\n/!\\\n\n");
     #endif
+    return (validated_packet_data);
 }
 
-static void     retrieve_response(t_ping *ping)
+static t_packet_data     *retrieve_response(t_ping *ping, char *buffer, ssize_t *bytes_received)
 {
-    ssize_t                 bytes_received  = 0;
-    char                    buffer[MAX_MTU];
     struct sockaddr_storage tmp;
     struct msghdr           msghdr;
     struct iovec            msg_iov[1];
     struct timeval          time_received;
 
-    ft_memset(&buffer, 0, sizeof(buffer));
     ft_memset(&msghdr, 0, sizeof(msghdr));
     ft_memset(&tmp, 0, sizeof(struct sockaddr_storage));
     ft_memset(msg_iov, 0, sizeof(msg_iov));
 
     msg_iov->iov_base   = buffer;
-    msg_iov->iov_len    = sizeof(buffer);
+    msg_iov->iov_len    = sizeof(buffer) * MAX_MTU;
 
     ft_memcpy(&tmp, &ping->target, sizeof(struct sockaddr_storage));
 
@@ -138,23 +127,39 @@ static void     retrieve_response(t_ping *ping)
     msghdr.msg_iovlen   = 1;
     msghdr.msg_flags    = 0;
 
-    bytes_received = recvmsg(ping->sockfd, &msghdr, MSG_DONTWAIT);
-    if (bytes_received != -1)
+    *bytes_received = recvmsg(ping->sockfd, &msghdr, MSG_DONTWAIT);
+    if (*bytes_received != -1)
     {
         gettimeofday_handler(ping, &time_received);
-
-        #ifdef DEBUG
-            dprintf(STDERR_FILENO, "---\n[DEBUG] bytes_received |%zu|\n", bytes_received);
-            print_bytes((int)bytes_received, &buffer);
-        #endif
-
-        analyse_packet(ping, bytes_received - IPHDR_SIZE, &time_received, buffer + IPHDR_SIZE);
+        return (analyse_packet(ping, *bytes_received - IPHDR_SIZE, &time_received, buffer + IPHDR_SIZE));
     }
+    return (NULL);
+}
+
+static void     display_response(void *buffer, t_packet_data *packet_data, ssize_t *bytes_received)
+{
+    (void)buffer;
+    (void)packet_data;
+    #ifdef DEBUG
+        dprintf(STDERR_FILENO, "/!\\ RECEIVED VALIDED PACKET |%hu|\n", packet_data->sequence);
+        print_bytes(84, buffer);
+    #endif
+
+    struct iphdr *iphdr = (struct iphdr *)buffer;
+    char          buff_ipv4[INET_ADDRSTRLEN];
+
+        // store this IP address in sa:
+    inet_ntop(AF_INET, &iphdr->saddr, buff_ipv4, sizeof(buff_ipv4));
+
+    dprintf(STDOUT_FILENO, "%zd bytes from %s: icmp->seq=%hu ttl=%hhu time=%.2lf ms\n", *bytes_received - IPHDR_SIZE, buff_ipv4, packet_data->sequence, iphdr->ttl, calc_latency(packet_data));
 }
 
 uint8_t         exec_ping(t_ping *ping)
 {
-    char    *packet = NULL;
+    char            *packet         = NULL;
+    t_packet_data   *packet_data    = NULL;
+    ssize_t         bytes_received  = 0;
+    char            buffer[MAX_MTU];
 
     if (!(packet = ft_memalloc(ping->conf.packet_size)))
         exit_routine(ping, FAILURE);
@@ -180,7 +185,9 @@ uint8_t         exec_ping(t_ping *ping)
 
             break ;
         }
-        retrieve_response(ping);
+        ft_memset(&buffer, 0, sizeof(buffer));
+        if ((packet_data = retrieve_response(ping, buffer, &bytes_received)) != NULL)
+            display_response(buffer, packet_data, &bytes_received);
 
     }
     ft_strdel(&packet);

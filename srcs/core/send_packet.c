@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/06 16:35:34 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/09 15:51:40 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/09 16:42:09 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,8 @@ void    send_packet(t_ping *ping, char *packet)
 
     ft_memset(packet, 0, ping->conf.packet_size);
     ft_memset(&packet_data, 0, sizeof(packet_data));
-    packet_data.sequence = ping->sequence;
+    packet_data.sequence    =   ping->sequence;
+    packet_data.status      |=  PACKET_PENDING;
     setup_iphdr(ping, packet);
     setup_payload(ping, packet + IPHDR_SIZE + ICMPHDR_SIZE);
     setup_timeval(ping, packet + ping->conf.packet_size - sizeof(struct timeval), &packet_data);
@@ -104,6 +105,7 @@ void    send_packet(t_ping *ping, char *packet)
     {
         ping->errors++;
     }
-    ft_lstappend(&ping->packets, ft_lstnew(&packet_data, sizeof(t_packet_data)));
+    if (!(ft_lstappend(&ping->packets, ft_lstnew(&packet_data, sizeof(t_packet_data)))))
+        exit_routine(ping, FAILURE);
     alarm(1);
 }

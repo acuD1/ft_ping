@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/09 14:12:32 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/09 17:30:53 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,9 @@
 # define SEND_PACKET            0x0001
 # define EXIT_PING              0x0002
 
+# define PACKET_RECEIVED        0x0001
+# define PACKET_PENDING         0x0002
+
 typedef struct                  s_conf
 {
     int                         custom_iphdr;
@@ -95,25 +98,26 @@ typedef struct                  s_ping
 
 extern volatile sig_atomic_t    g_ping;
 
-uint8_t                          exec_ping(t_ping *ping);
-void                             exit_routine(t_ping *ping, int8_t status);
-void                             getaddrinfo_error_handler(char *target, int status);
-void                             free_ping(t_ping *ping);
-uint8_t                          set_opts_args(t_ping *ping, int argc, char **argv);
-void                             print_unallowed_opt(t_opts_args *opts_args);
-void                             print_usage(void);
-void                             print_version(void);
-uint8_t                          resolve_target_ipv4(t_ping *ping, char *target);
-void                             init_ping(t_ping *ping);
-void                             print_init(t_ping *ping);
-void                             sig_handler(int signo);
-void                             send_packet(t_ping *ping, char *packet);
-void                             setup_socket(t_ping *ping);
-void                             gettimeofday_handler(t_ping *ping, void *time);
+double                          calc_latency(t_packet_data *packet_data);
+uint8_t                         exec_ping(t_ping *ping);
+void                            exit_routine(t_ping *ping, int8_t status);
+void                            getaddrinfo_error_handler(char *target, int status);
+void                            free_ping(t_ping *ping);
+uint8_t                         set_opts_args(t_ping *ping, int argc, char **argv);
+void                            print_unallowed_opt(t_opts_args *opts_args);
+void                            print_usage(void);
+void                            print_version(void);
+uint8_t                         resolve_target_ipv4(t_ping *ping, char *target);
+void                            init_ping(t_ping *ping);
+void                            print_init(t_ping *ping);
+void                            sig_handler(int signo);
+void                            send_packet(t_ping *ping, char *packet);
+void                            setup_socket(t_ping *ping);
+void                            gettimeofday_handler(t_ping *ping, void *time);
 
 /* DEBUG */
-void                             print_bytes(int bytes, void *msg);
-void                             print_time(void *time);
+void                            print_bytes(int bytes, void *msg);
+void                            print_time(void *time);
 void                            debug_packets(void *content);
 
 #endif
