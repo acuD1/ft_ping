@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/25 16:35:54 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/06 14:35:00 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/09 12:26:56 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 void    free_ping(t_ping *ping)
 {
-    (void)ping;
+    ft_lstdel(&ping->packets, NULL);
 }
 
 void __attribute__ ((noreturn)) exit_routine(t_ping *ping, int8_t status)

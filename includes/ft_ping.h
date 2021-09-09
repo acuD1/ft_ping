@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/08 17:17:16 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/09 14:12:32 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,8 +71,18 @@ typedef struct                  s_ping_global
     volatile sig_atomic_t       sig_int;
 }                               t_ping_global;
 
+typedef struct                  s_packet_data
+{
+    uint16_t                    sequence;
+    uint8_t                     status;
+    char                        _PADDING(5);
+    struct timeval              time_sent;
+    struct timeval              time_received;
+}                               t_packet_data;
+
 typedef struct                  s_ping
 {
+    t_lst                      *packets;
     int                         sockfd;
     uint16_t                    sequence;
     uint16_t                    errors;
@@ -104,5 +114,6 @@ void                             gettimeofday_handler(t_ping *ping, void *time);
 /* DEBUG */
 void                             print_bytes(int bytes, void *msg);
 void                             print_time(void *time);
+void                            debug_packets(void *content);
 
 #endif

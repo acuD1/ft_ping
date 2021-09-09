@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/25 16:53:03 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/07 16:42:21 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/09 12:16:22 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,4 +32,12 @@ void   print_time(void *time)
     memcpy(&tmp, time, sizeof(tmp));
     print_bytes(sizeof(tmp), &tmp);
     dprintf(STDERR_FILENO, "[DEBUG] TIME SEC |%lu| USEC |%lu|\n", tmp.tv_sec, tmp.tv_usec);
+}
+
+void    debug_packets(void *content)
+{
+    t_packet_data *tmp = (t_packet_data *)content;
+
+    dprintf(STDERR_FILENO, "\n***\n[DEBUG] packet |%hu|\n", tmp->sequence);
+    print_time(&tmp->time_sent);
 }
