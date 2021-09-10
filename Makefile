@@ -103,6 +103,7 @@ SRC					+= $(S_PATH)$(CORE)socket.c
 SRC					+= $(S_PATH)$(DISPLAY)errors.c
 SRC					+= $(S_PATH)$(DISPLAY)usage.c
 SRC					+= $(S_PATH)$(DISPLAY)debug.c
+SRC					+= $(S_PATH)$(TOOLS)loss.c
 SRC					+= $(S_PATH)$(TOOLS)time.c
 
 # Headers

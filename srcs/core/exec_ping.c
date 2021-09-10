@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/29 14:30:22 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/10 14:58:20 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/10 17:42:22 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,6 +95,7 @@ static t_packet_data     *analyse_packet(t_ping *ping, ssize_t icmp_area_size, s
             validated_packet_data = (t_packet_data *)validated_packet->content;
             ft_memcpy(&validated_packet_data->time_received, time_received, sizeof(struct timeval));
             validated_packet_data->status |= PACKET_RECEIVED;
+            ping->received++;
             return (validated_packet_data);
         }
     }
@@ -107,7 +108,7 @@ static t_packet_data     *analyse_packet(t_ping *ping, ssize_t icmp_area_size, s
     return (NULL);
 }
 
-void    display_icmp_error(void *buffer, void *icmp_area, uint16_t sequence)
+static void             display_icmp_error(void *buffer, void *icmp_area, uint16_t sequence)
 {
     char            buff_ipv4[INET_ADDRSTRLEN];
     struct iphdr    *iphdr      = (struct iphdr *)buffer;
@@ -146,9 +147,11 @@ static t_packet_data     *retrieve_response(t_ping *ping, char *buffer, ssize_t 
     if (*bytes_received != -1)
     {
         gettimeofday_handler(ping, &time_received);
+        ping->end = time_received;
         if (!(packet_data = analyse_packet(ping, *bytes_received - IPHDR_SIZE, &time_received, buffer + IPHDR_SIZE)))
         {
             display_icmp_error(buffer, buffer + IPHDR_SIZE, ping->sequence);
+            ping->errors++;
             return (NULL);
         }
         return (packet_data);
@@ -168,7 +171,40 @@ static void     display_response(void *buffer, t_packet_data *packet_data, ssize
 
     inet_ntop(AF_INET, &iphdr->saddr, buff_ipv4, sizeof(buff_ipv4));
 
-    dprintf(STDOUT_FILENO, "%zd bytes from %s: icmp->seq=%hu ttl=%hhu time=%.2lf ms\n", *bytes_received - IPHDR_SIZE, buff_ipv4, packet_data->sequence, iphdr->ttl, calc_latency(packet_data));
+    dprintf(STDOUT_FILENO, "%zd bytes from %s: icmp->seq=%hu ttl=%hhu time=%.2lf ms\n",
+        *bytes_received - IPHDR_SIZE, buff_ipv4,
+        packet_data->sequence, iphdr->ttl,
+        calc_latency(&packet_data->time_sent, &packet_data->time_received));
+}
+
+static void     fetch_responses(t_ping *ping)
+{
+    struct sockaddr_in  *tmp = (struct sockaddr_in *)&ping->target;
+    char                buff_ipv4[INET_ADDRSTRLEN];
+    t_ping_rtt          ping_rtt;
+
+    ft_memset(&buff_ipv4, 0, sizeof(buff_ipv4));
+    ft_memset(&ping_rtt, 0, sizeof(t_ping_rtt));
+
+    #pragma clang diagnostic ignored "-Wcast-align"
+
+    if (!(inet_ntop(tmp->sin_family, &tmp->sin_addr, buff_ipv4, sizeof(buff_ipv4))))
+    {
+        dprintf(STDERR_FILENO, "ft_ping: inet_ntop(): %s\n", strerror(errno));
+        exit_routine(ping, FAILURE);
+    }
+
+    ft_lstiter_ctx(ping->packets, &ping_rtt, fetch_ping_rtt);
+
+
+    dprintf(STDOUT_FILENO, "--- %s ping statistics ---\n", buff_ipv4);
+    dprintf(STDOUT_FILENO, "%hu packets transmitted, %hu received, ", ping->sequence, ping->received);
+    if (ping->errors)
+        dprintf(STDOUT_FILENO, "+%hu errors, ", ping->errors);
+    dprintf(STDOUT_FILENO, "%d%% packet loss, time %.f ms\n",
+        calc_packet_loss(ping), calc_latency(&ping->start, &ping->end));
+    dprintf(STDOUT_FILENO, "rtt min/avg/max/mdev = %.3lf/%.3lf/%.3lf/%.3lf ms\n",
+        ping_rtt.min, ping_rtt.avg, ping_rtt.max, calc_mdev(ping, &ping_rtt));
 }
 
 uint8_t         exec_ping(t_ping *ping)
@@ -200,16 +236,18 @@ uint8_t         exec_ping(t_ping *ping)
             #ifdef DEBUG
                 dprintf(STDERR_FILENO, "[DEBUG] EXIT_PING\n");
             #endif
+            dprintf(STDERR_FILENO, "\n");
 
             break ;
         }
         ft_memset(&buffer, 0, sizeof(buffer));
         if ((packet_data = retrieve_response(ping, buffer, &bytes_received)) != NULL)
+        {
             display_response(buffer, packet_data, &bytes_received);
-
+        }
     }
+    fetch_responses(ping);
     ft_strdel(&packet);
-
     #ifdef DEBUG
         ft_lstiter(ping->packets, debug_packets);
     #endif

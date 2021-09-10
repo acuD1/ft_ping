@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/25 16:53:03 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/09 17:17:39 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/10 15:47:31 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,5 +43,5 @@ void    debug_packets(void *content)
     print_time(&tmp->time_received);
     dprintf(STDERR_FILENO, "[DEBUG] Status : %s\n", tmp->status & PACKET_RECEIVED ? "PACKET_RECEIVED" : "PACKET_PENDING");
     if (tmp->status & PACKET_RECEIVED)
-        dprintf(STDERR_FILENO, "[DEBUG] Latency: %.2lf ms\n", calc_latency(tmp));
+        dprintf(STDERR_FILENO, "[DEBUG] Latency: %.2lf ms\n", calc_latency(&tmp->time_sent, &tmp->time_received));
 }

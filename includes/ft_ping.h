@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/10 14:57:18 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/10 17:41:03 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,20 @@ typedef struct                  s_ping_global
     volatile sig_atomic_t       sig_int;
 }                               t_ping_global;
 
+typedef struct                  s_ping_stats
+{
+    uint16_t                    ping_sent;
+}                               t_ping_stats;
+
+typedef struct                  s_ping_rtt
+{
+    double                      min;
+    double                      max;
+    double                      avg;
+    double                      sum;
+    double                      sum_square;
+}                               t_ping_rtt;
+
 typedef struct                  s_packet_data
 {
     uint16_t                    sequence;
@@ -87,6 +101,7 @@ typedef struct                  s_ping
     t_lst                      *packets;
     int                         sockfd;
     uint16_t                    sequence;
+    uint16_t                    received;
     uint16_t                    errors;
     t_conf                      conf;
     char                        _PADDING(4);
@@ -97,7 +112,10 @@ typedef struct                  s_ping
 
 extern volatile sig_atomic_t    g_ping;
 
-double                          calc_latency(t_packet_data *packet_data);
+double                          calc_latency(void *t_start, void *t_end);
+double                          calc_mdev(t_ping *ping, t_ping_rtt *ping_rtt);
+uint8_t                         fetch_ping_rtt(void *content, void *context);
+uint8_t                         calc_packet_loss(t_ping *ping);
 uint8_t                         exec_ping(t_ping *ping);
 void                            exit_routine(t_ping *ping, int8_t status);
 void                            getaddrinfo_error_handler(char *target, int status);
