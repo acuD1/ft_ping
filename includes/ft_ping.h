@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/09 17:30:53 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/10 14:57:18 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,6 @@
 # define ICMPHDR_SIZE           8
 # define TTL                    64
 # define MAX_MTU                1500
-# define START_SEQUENCE         1
 
 # define SEND_PACKET            0x0001
 # define EXIT_PING              0x0002
@@ -114,6 +113,7 @@ void                            sig_handler(int signo);
 void                            send_packet(t_ping *ping, char *packet);
 void                            setup_socket(t_ping *ping);
 void                            gettimeofday_handler(t_ping *ping, void *time);
+void                            icmp_error_handler(uint8_t type, uint8_t code, uint16_t sequence, char *source);
 
 /* DEBUG */
 void                            print_bytes(int bytes, void *msg);

@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/06 16:35:34 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/09 16:42:09 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/10 14:56:19 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,7 @@ static void     setup_icmphdr(t_ping *ping, void *packet)
 
     icmphdr->type               = ICMP_ECHO;
     icmphdr->un.echo.id         = htons((uint16_t)ping->conf.pid);
-    icmphdr->un.echo.sequence   = htons(ping->sequence++);
+    icmphdr->un.echo.sequence   = htons(ping->sequence);
     icmphdr->checksum           = in_cksum(packet, ping->conf.packet_size - IPHDR_SIZE);
 }
 
@@ -84,6 +84,7 @@ void    send_packet(t_ping *ping, char *packet)
         dprintf(STDERR_FILENO, "---\n[DEBUG] SEND_PACKET ! |%hu|\n", ping->sequence);
     #endif
 
+    ping->sequence++;
     ft_memset(packet, 0, ping->conf.packet_size);
     ft_memset(&packet_data, 0, sizeof(packet_data));
     packet_data.sequence    =   ping->sequence;

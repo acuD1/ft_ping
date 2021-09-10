@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/29 14:30:22 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/09 17:40:35 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/10 14:58:20 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,6 +95,7 @@ static t_packet_data     *analyse_packet(t_ping *ping, ssize_t icmp_area_size, s
             validated_packet_data = (t_packet_data *)validated_packet->content;
             ft_memcpy(&validated_packet_data->time_received, time_received, sizeof(struct timeval));
             validated_packet_data->status |= PACKET_RECEIVED;
+            return (validated_packet_data);
         }
     }
 
@@ -102,11 +103,25 @@ static t_packet_data     *analyse_packet(t_ping *ping, ssize_t icmp_area_size, s
         if (response->type != ICMP_ECHOREPLY || htons(response->un.echo.id) != ping->conf.pid || htons(response->un.echo.sequence) > ping->sequence)
             dprintf(STDERR_FILENO, "\n/!\\\n[DEBUG] Wrong packet !!!\n/!\\\n\n");
     #endif
-    return (validated_packet_data);
+
+    return (NULL);
+}
+
+void    display_icmp_error(void *buffer, void *icmp_area, uint16_t sequence)
+{
+    char            buff_ipv4[INET_ADDRSTRLEN];
+    struct iphdr    *iphdr      = (struct iphdr *)buffer;
+    struct icmphdr  *response   = (struct icmphdr *)(icmp_area);
+
+    inet_ntop(AF_INET, &iphdr->saddr, buff_ipv4, sizeof(buff_ipv4));
+
+    if (response->type != ICMP_ECHO)
+        icmp_error_handler(response->type, response->code, sequence, buff_ipv4);
 }
 
 static t_packet_data     *retrieve_response(t_ping *ping, char *buffer, ssize_t *bytes_received)
 {
+    t_packet_data           *packet_data    = NULL;
     struct sockaddr_storage tmp;
     struct msghdr           msghdr;
     struct iovec            msg_iov[1];
@@ -131,15 +146,18 @@ static t_packet_data     *retrieve_response(t_ping *ping, char *buffer, ssize_t 
     if (*bytes_received != -1)
     {
         gettimeofday_handler(ping, &time_received);
-        return (analyse_packet(ping, *bytes_received - IPHDR_SIZE, &time_received, buffer + IPHDR_SIZE));
+        if (!(packet_data = analyse_packet(ping, *bytes_received - IPHDR_SIZE, &time_received, buffer + IPHDR_SIZE)))
+        {
+            display_icmp_error(buffer, buffer + IPHDR_SIZE, ping->sequence);
+            return (NULL);
+        }
+        return (packet_data);
     }
     return (NULL);
 }
 
 static void     display_response(void *buffer, t_packet_data *packet_data, ssize_t *bytes_received)
 {
-    (void)buffer;
-    (void)packet_data;
     #ifdef DEBUG
         dprintf(STDERR_FILENO, "/!\\ RECEIVED VALIDED PACKET |%hu|\n", packet_data->sequence);
         print_bytes(84, buffer);
@@ -148,7 +166,6 @@ static void     display_response(void *buffer, t_packet_data *packet_data, ssize
     struct iphdr *iphdr = (struct iphdr *)buffer;
     char          buff_ipv4[INET_ADDRSTRLEN];
 
-        // store this IP address in sa:
     inet_ntop(AF_INET, &iphdr->saddr, buff_ipv4, sizeof(buff_ipv4));
 
     dprintf(STDOUT_FILENO, "%zd bytes from %s: icmp->seq=%hu ttl=%hhu time=%.2lf ms\n", *bytes_received - IPHDR_SIZE, buff_ipv4, packet_data->sequence, iphdr->ttl, calc_latency(packet_data));
@@ -168,6 +185,7 @@ uint8_t         exec_ping(t_ping *ping)
 
     setup_socket(ping);
 
+    // alarm(1);
     send_packet(ping, packet);
     while (1)
     {
