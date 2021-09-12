@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/25 16:40:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/09 17:30:49 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/12 18:01:56 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,8 @@ void    print_init(t_ping *ping)
 
     #pragma clang diagnostic ignored "-Wcast-align"
 
-    if (!(inet_ntop(tmp->sin_family, &tmp->sin_addr, buff_ipv4, sizeof(buff_ipv4))))
+    if (!(inet_ntop(tmp->sin_family, &tmp->sin_addr, buff_ipv4,
+            sizeof(buff_ipv4))))
     {
         dprintf(STDERR_FILENO, "ft_ping: inet_ntop(): %s\n", strerror(errno));
         exit_routine(ping, FAILURE);

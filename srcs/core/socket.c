@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/07 11:21:42 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/07 11:27:08 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/12 18:01:24 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,9 @@
 
 void    setup_socket(t_ping *ping)
 {
-    if ((ping->sockfd = socket(((struct sockaddr_in *)&ping->target)->sin_family, SOCK_RAW, IPPROTO_ICMP)) == -1)
+    if ((ping->sockfd = socket(
+                            ((struct sockaddr_in *)&ping->target)->sin_family,
+                            SOCK_RAW, IPPROTO_ICMP)) == -1)
     {
         printf("socket(): ERROR: %s , errno %d\n", strerror(errno), errno);
         exit_routine(ping, FAILURE);

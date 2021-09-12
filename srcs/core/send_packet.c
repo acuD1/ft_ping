@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/06 16:35:34 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/12 17:09:18 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/12 18:00:57 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,18 +26,24 @@ static void     setup_iphdr(t_ping *ping, void *packet)
     iphdr->protocol     = IPPROTO_ICMP;
     iphdr->check        = 0;
     iphdr->saddr        = INADDR_ANY;
-    iphdr->daddr        = ((struct sockaddr_in *)&ping->target)->sin_addr.s_addr;
+    iphdr->daddr
+        = ((struct sockaddr_in *)&ping->target)->sin_addr.s_addr;
 }
 
 static void     setup_payload(t_ping *ping, void *packet)
 {
-    char *payload = (char *)packet;
+    char    *payload    = (char *)packet;
+    size_t  payload_end = ping->conf.packet_size
+                            - IPHDR_SIZE - ICMPHDR_SIZE
+                            - sizeof(struct timeval);
 
-    for (size_t i = 0; i < ping->conf.packet_size - IPHDR_SIZE - ICMPHDR_SIZE - sizeof(struct timeval); i++)
+    for (size_t i = 0; i < payload_end; i++)
         payload[i] = 0x42;
 }
 
-static void     setup_timeval(void *packet, t_packet_data *packet_data, struct timeval *current)
+static void     setup_timeval(
+                    void *packet, t_packet_data *packet_data,
+                    struct timeval *current)
 {
     ft_memcpy(packet, current, sizeof(struct timeval));
     ft_memcpy(&packet_data->time_sent, packet, sizeof(struct timeval));
@@ -51,7 +57,8 @@ static void     setup_icmphdr(t_ping *ping, void *packet)
     icmphdr->type               = ICMP_ECHO;
     icmphdr->un.echo.id         = htons((uint16_t)ping->conf.pid);
     icmphdr->un.echo.sequence   = htons(ping->sequence);
-    icmphdr->checksum           = in_cksum(packet, ping->conf.packet_size - IPHDR_SIZE);
+    icmphdr->checksum           = in_cksum(packet,
+                                    ping->conf.packet_size - IPHDR_SIZE);
 }
 
 void    send_packet(t_ping *ping, char *packet, struct timeval *current)
@@ -66,16 +73,18 @@ void    send_packet(t_ping *ping, char *packet, struct timeval *current)
     packet_data.status      |=  PACKET_PENDING;
     setup_iphdr(ping, packet);
     setup_payload(ping, packet + IPHDR_SIZE + ICMPHDR_SIZE);
-    setup_timeval(packet + ping->conf.packet_size - sizeof(struct timeval), &packet_data, current);
+    setup_timeval(packet + ping->conf.packet_size - sizeof(struct timeval),
+        &packet_data, current);
     setup_icmphdr(ping, packet + IPHDR_SIZE);
 
-    bytes_sent = sendto(ping->sockfd, packet, ping->conf.packet_size, MSG_DONTWAIT,
-                    (struct sockaddr_in *)&ping->target, sizeof(struct sockaddr_in));
+    bytes_sent = sendto(ping->sockfd, packet, ping->conf.packet_size,
+                    MSG_DONTWAIT, (struct sockaddr_in *)&ping->target,
+                    sizeof(struct sockaddr_in));
+
     if (bytes_sent == -1)
-    {
         ping->errors++;
-    }
-    if (!(ft_lstappend(&ping->packets, ft_lstnew(&packet_data, sizeof(t_packet_data)))))
+    if (!(ft_lstappend(&ping->packets,
+            ft_lstnew(&packet_data, sizeof(t_packet_data)))))
         exit_routine(ping, FAILURE);
     if (ping->sequence > 0 && ping->received == 0)
         ft_memcpy(&ping->end, current, sizeof(struct timeval));

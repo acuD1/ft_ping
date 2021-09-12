@@ -6,13 +6,13 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:33:32 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/08 17:18:56 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/12 17:57:28 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_ping.h"
 
-int             main(int argc, char *argv[])
+int     main(int argc, char *argv[])
 {
     t_ping  ping;
 
