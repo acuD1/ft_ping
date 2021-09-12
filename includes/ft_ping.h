@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/12 17:12:39 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/12 17:52:45 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,7 +156,6 @@ void                            display_recv(
                                     t_packet_data *packet_data,
                                     ssize_t *bytes_received);
 uint16_t                        in_cksum(void *buffer, size_t len);
-
 
 /* DEBUG */
 void                            print_bytes(int bytes, void *msg);

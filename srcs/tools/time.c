@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/07 16:33:30 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/12 13:15:29 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/12 17:53:52 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,4 +91,15 @@ uint8_t fetch_ping_rtt(void *content, void *context)
     }
 
     return (SUCCESS);
+}
+
+double calc_packet_loss(t_ping *ping)
+{
+    double packet_nonreceived = ping->sequence - ping->received;
+    if (packet_nonreceived > 0)
+    {
+        packet_nonreceived = packet_nonreceived / ping->sequence;
+        return (packet_nonreceived * 100.0);
+    }
+    return (0);
 }
