@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/25 16:38:12 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/10 14:58:56 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/12 18:03:50 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,8 @@ void     getaddrinfo_error_handler(char *target, int status)
 
 /* https://datatracker.ietf.org/doc/html/rfc792 */
 
-void    icmp_error_handler(uint8_t type, uint8_t code, uint16_t sequence, char *source)
+void    icmp_error_handler(
+            uint8_t type, uint8_t code, uint16_t sequence, char *source)
 {
     char    *error          = NULL;
     uint8_t bad_code    = 0;
