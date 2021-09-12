@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/06 13:34:50 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/10 15:05:42 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/12 17:07:59 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,9 +37,12 @@ uint8_t resolve_target_ipv4(t_ping *ping, char *target)
     /**/
 
     /* Setting up sockaddr storage structure */
-    ((struct sockaddr_in *)&ping->target)->sin_addr.s_addr = ((struct sockaddr_in *)res->ai_addr)->sin_addr.s_addr;
-    ((struct sockaddr_in *)&ping->target)->sin_port = htons(0);
-    ((struct sockaddr_in *)&ping->target)->sin_family = (sa_family_t)res->ai_family;
+    ((struct sockaddr_in *)&ping->target)->sin_addr.s_addr
+        = ((struct sockaddr_in *)res->ai_addr)->sin_addr.s_addr;
+    ((struct sockaddr_in *)&ping->target)->sin_port
+        = htons(0);
+    ((struct sockaddr_in *)&ping->target)->sin_family
+        = (sa_family_t)res->ai_family;
 
     /* Cleaning */
     for (struct addrinfo *tmp = NULL; res; res = tmp)

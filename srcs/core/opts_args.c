@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/25 16:43:47 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/06 15:29:39 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/12 17:05:42 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,10 +25,10 @@ uint8_t         set_opts_args(t_ping *ping, int argc, char **argv)
 
     ft_memset(&opts_conf, 0, sizeof(t_opts_conf));
     ft_memset(&opts_args, 0, sizeof(t_opts_args));
-    opts_conf.allowed_opt = ALLOWED_OPT;
-    opts_conf.allowed_opt_arg = ALLOWED_OPT_ARG;
-    opts_conf.allowed_opt_tab = ALLOWED_OPT_TAB;
-    opts_conf.allowed_opt_tab_arg = ALLOWED_OPT_TAB_ARG;
+    opts_conf.allowed_opt           = ALLOWED_OPT;
+    opts_conf.allowed_opt_arg       = ALLOWED_OPT_ARG;
+    opts_conf.allowed_opt_tab       = ALLOWED_OPT_TAB;
+    opts_conf.allowed_opt_tab_arg   = ALLOWED_OPT_TAB_ARG;
 
     if (argc < 2)
     {
@@ -56,11 +56,13 @@ uint8_t         set_opts_args(t_ping *ping, int argc, char **argv)
     }
     if (ft_lstlen(opts_args.args) > 1)
     {
-        dprintf(STDERR_FILENO, "ft_ping: too many arguments: hops not implemented\n");
+        dprintf(STDERR_FILENO,
+            "ft_ping: too many arguments: hops not implemented\n");
         print_usage();
         return (set_opts_args_failure(&opts_args));
     }
-    if (resolve_target_ipv4(ping, get_arg(&opts_args.args, POSITION(0))->arg) != SUCCESS)
+    if (resolve_target_ipv4(ping,
+        get_arg(&opts_args.args, POSITION(0))->arg) != SUCCESS)
         return (set_opts_args_failure(&opts_args));
     free_opts_args(&opts_args);
     return (SUCCESS);

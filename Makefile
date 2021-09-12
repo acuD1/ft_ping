@@ -96,15 +96,20 @@ SRC					+= $(S_PATH)$(CORE)init.c
 SRC					+= $(S_PATH)$(CORE)main.c
 SRC					+= $(S_PATH)$(CORE)memory.c
 SRC					+= $(S_PATH)$(CORE)opts_args.c
+SRC					+= $(S_PATH)$(CORE)recv_packet.c
 SRC					+= $(S_PATH)$(CORE)resolve.c
 SRC					+= $(S_PATH)$(CORE)send_packet.c
 SRC					+= $(S_PATH)$(CORE)signals.c
 SRC					+= $(S_PATH)$(CORE)socket.c
+SRC					+= $(S_PATH)$(CORE)validate_packet.c
+SRC					+= $(S_PATH)$(CORE)fetch_stats.c
 SRC					+= $(S_PATH)$(DISPLAY)errors.c
 SRC					+= $(S_PATH)$(DISPLAY)usage.c
 SRC					+= $(S_PATH)$(DISPLAY)debug.c
+SRC					+= $(S_PATH)$(DISPLAY)recv_stats.c
 SRC					+= $(S_PATH)$(TOOLS)loss.c
 SRC					+= $(S_PATH)$(TOOLS)time.c
+SRC					+= $(S_PATH)$(TOOLS)misc.c
 
 # Headers
 

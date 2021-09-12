@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/10 17:41:03 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/12 17:12:39 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,7 @@ typedef struct                  s_packet_data
     uint8_t                     status;
     char                        _PADDING(5);
     struct timeval              time_sent;
-    struct timeval              time_received;
+    struct timeval              time_recv;
 }                               t_packet_data;
 
 typedef struct                  s_ping
@@ -103,8 +103,9 @@ typedef struct                  s_ping
     uint16_t                    sequence;
     uint16_t                    received;
     uint16_t                    errors;
+    char                        buff_ipv4[INET_ADDRSTRLEN];
+    char                        _PADDING(2);
     t_conf                      conf;
-    char                        _PADDING(4);
     struct timeval              start;
     struct timeval              end;
     struct sockaddr_storage     target;
@@ -115,23 +116,47 @@ extern volatile sig_atomic_t    g_ping;
 double                          calc_latency(void *t_start, void *t_end);
 double                          calc_mdev(t_ping *ping, t_ping_rtt *ping_rtt);
 uint8_t                         fetch_ping_rtt(void *content, void *context);
-uint8_t                         calc_packet_loss(t_ping *ping);
+double                          calc_packet_loss(t_ping *ping);
 uint8_t                         exec_ping(t_ping *ping);
 void                            exit_routine(t_ping *ping, int8_t status);
-void                            getaddrinfo_error_handler(char *target, int status);
+void                            getaddrinfo_error_handler(
+                                    char *target, int status);
 void                            free_ping(t_ping *ping);
-uint8_t                         set_opts_args(t_ping *ping, int argc, char **argv);
+uint8_t                         set_opts_args(
+                                    t_ping *ping, int argc, char **argv);
 void                            print_unallowed_opt(t_opts_args *opts_args);
 void                            print_usage(void);
 void                            print_version(void);
-uint8_t                         resolve_target_ipv4(t_ping *ping, char *target);
+uint8_t                         resolve_target_ipv4(
+                                    t_ping *ping, char *target);
 void                            init_ping(t_ping *ping);
 void                            print_init(t_ping *ping);
 void                            sig_handler(int signo);
-void                            send_packet(t_ping *ping, char *packet);
+void                            send_packet(
+                                    t_ping *ping, char *packet,
+                                    struct timeval *current);
 void                            setup_socket(t_ping *ping);
 void                            gettimeofday_handler(t_ping *ping, void *time);
-void                            icmp_error_handler(uint8_t type, uint8_t code, uint16_t sequence, char *source);
+void                            icmp_error_handler(
+                                    uint8_t type, uint8_t code,
+                                    uint16_t sequence, char *source);
+t_packet_data                   *recv_packet(
+                                    t_ping *ping, char *buffer,
+                                    ssize_t *bytes_recv,
+                                    struct timeval *time_recv);
+t_packet_data                   *validate_packet(
+                                    t_ping *ping, ssize_t icmp_area_size,
+                                    struct timeval *time_received,
+                                    void *icmp_area);
+char                            *inet_ntop_handler(t_ping *ping, uint32_t *addr);
+void                            display_stats(t_ping *ping, t_ping_rtt *ping_rtt);
+void                            fetch_stats(t_ping *ping);
+void                            display_recv(
+                                    t_ping *ping, void *buffer,
+                                    t_packet_data *packet_data,
+                                    ssize_t *bytes_received);
+uint16_t                        in_cksum(void *buffer, size_t len);
+
 
 /* DEBUG */
 void                            print_bytes(int bytes, void *msg);

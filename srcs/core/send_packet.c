@@ -6,31 +6,11 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/06 16:35:34 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/10 14:56:19 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/12 17:09:18 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_ping.h"
-
-static uint16_t in_cksum(void *buffer, size_t len)
-{
-	uint16_t *tmp   = (uint16_t *)buffer;
-	uint32_t sum    = 0;
-
-	while (len > 1)
-	{
-		sum += *tmp++;
-		len -= 2;
-	}
-
-	if (len > 0)
-		sum += *(uint8_t *)tmp;
-
-	while (sum >> 16)
-		sum = (sum & 0xFFFF) + (sum >> 16);
-
-	return ((uint16_t)~sum);
-}
 
 static void     setup_iphdr(t_ping *ping, void *packet)
 {
@@ -57,10 +37,9 @@ static void     setup_payload(t_ping *ping, void *packet)
         payload[i] = 0x42;
 }
 
-static void     setup_timeval(t_ping *ping, void *packet, t_packet_data *packet_data)
+static void     setup_timeval(void *packet, t_packet_data *packet_data, struct timeval *current)
 {
-    (void)packet_data;
-    gettimeofday_handler(ping, packet);
+    ft_memcpy(packet, current, sizeof(struct timeval));
     ft_memcpy(&packet_data->time_sent, packet, sizeof(struct timeval));
 
 }
@@ -75,14 +54,10 @@ static void     setup_icmphdr(t_ping *ping, void *packet)
     icmphdr->checksum           = in_cksum(packet, ping->conf.packet_size - IPHDR_SIZE);
 }
 
-void    send_packet(t_ping *ping, char *packet)
+void    send_packet(t_ping *ping, char *packet, struct timeval *current)
 {
     ssize_t         bytes_sent  = 0;
     t_packet_data   packet_data;
-
-    #ifdef DEBUG
-        dprintf(STDERR_FILENO, "---\n[DEBUG] SEND_PACKET ! |%hu|\n", ping->sequence);
-    #endif
 
     ping->sequence++;
     ft_memset(packet, 0, ping->conf.packet_size);
@@ -91,14 +66,8 @@ void    send_packet(t_ping *ping, char *packet)
     packet_data.status      |=  PACKET_PENDING;
     setup_iphdr(ping, packet);
     setup_payload(ping, packet + IPHDR_SIZE + ICMPHDR_SIZE);
-    setup_timeval(ping, packet + ping->conf.packet_size - sizeof(struct timeval), &packet_data);
+    setup_timeval(packet + ping->conf.packet_size - sizeof(struct timeval), &packet_data, current);
     setup_icmphdr(ping, packet + IPHDR_SIZE);
-
-    #ifdef DEBUG
-        print_bytes(ping->conf.packet_size, packet);
-        print_time(packet + ping->conf.packet_size - sizeof(struct timeval));
-    #endif
-
 
     bytes_sent = sendto(ping->sockfd, packet, ping->conf.packet_size, MSG_DONTWAIT,
                     (struct sockaddr_in *)&ping->target, sizeof(struct sockaddr_in));
@@ -108,5 +77,8 @@ void    send_packet(t_ping *ping, char *packet)
     }
     if (!(ft_lstappend(&ping->packets, ft_lstnew(&packet_data, sizeof(t_packet_data)))))
         exit_routine(ping, FAILURE);
+    if (ping->sequence > 0 && ping->received == 0)
+        ft_memcpy(&ping->end, current, sizeof(struct timeval));
     alarm(1);
+    g_ping = 0;
 }

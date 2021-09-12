@@ -1,24 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   loss.c                                             :+:      :+:    :+:   */
+/*   fetch_stats.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/09/10 15:41:29 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/11 12:47:27 by arsciand         ###   ########.fr       */
+/*   Created: 2021/09/12 16:59:08 by arsciand          #+#    #+#             */
+/*   Updated: 2021/09/12 16:59:47 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_ping.h"
 
-double calc_packet_loss(t_ping *ping)
+/* https://github.com/iputils/iputils/issues/193 */
+
+void     fetch_stats(t_ping *ping)
 {
-    double packet_nonreceived = ping->sequence - ping->received;
-    if (packet_nonreceived > 0)
-    {
-        packet_nonreceived = packet_nonreceived / ping->sequence;
-        return (packet_nonreceived * 100.0);
-    }
-    return (0);
+    struct sockaddr_in  *tmp = (struct sockaddr_in *)&ping->target;
+    t_ping_rtt          ping_rtt;
+
+    ft_memset(&ping_rtt, 0, sizeof(t_ping_rtt));
+    inet_ntop_handler(ping, (uint32_t *)&tmp->sin_addr);
+    ft_lstiter_ctx(ping->packets, &ping_rtt, fetch_ping_rtt);
+    display_stats(ping, &ping_rtt);
 }
