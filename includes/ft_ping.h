@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/12 17:52:45 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/18 14:22:49 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,6 +99,8 @@ typedef struct                  s_packet_data
 typedef struct                  s_ping
 {
     t_lst                      *packets;
+    char                        *packet;
+    uint64_t                    opts;
     int                         sockfd;
     uint16_t                    sequence;
     uint16_t                    received;
@@ -133,8 +135,7 @@ void                            init_ping(t_ping *ping);
 void                            print_init(t_ping *ping);
 void                            sig_handler(int signo);
 void                            send_packet(
-                                    t_ping *ping, char *packet,
-                                    struct timeval *current);
+                                    t_ping *ping, struct timeval *current);
 void                            setup_socket(t_ping *ping);
 void                            gettimeofday_handler(t_ping *ping, void *time);
 void                            icmp_error_handler(
@@ -156,6 +157,8 @@ void                            display_recv(
                                     t_packet_data *packet_data,
                                     ssize_t *bytes_received);
 uint16_t                        in_cksum(void *buffer, size_t len);
+void                            display_unowned(t_ping *ping, void *buffer, ssize_t *bytes_received);
+
 
 /* DEBUG */
 void                            print_bytes(int bytes, void *msg);

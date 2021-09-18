@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/25 16:43:47 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/12 17:05:42 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/18 13:05:38 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,11 +49,6 @@ uint8_t         set_opts_args(t_ping *ping, int argc, char **argv)
         print_usage();
         return (set_opts_args_failure(&opts_args));
     }
-    if (opts_args.all & V_OPT)
-    {
-        dprintf(STDERR_FILENO, "NOT SUPPORTED YET\n");
-        return (set_opts_args_failure(&opts_args));
-    }
     if (ft_lstlen(opts_args.args) > 1)
     {
         dprintf(STDERR_FILENO,
@@ -64,6 +59,7 @@ uint8_t         set_opts_args(t_ping *ping, int argc, char **argv)
     if (resolve_target_ipv4(ping,
         get_arg(&opts_args.args, POSITION(0))->arg) != SUCCESS)
         return (set_opts_args_failure(&opts_args));
+    ping->opts = opts_args.all;
     free_opts_args(&opts_args);
     return (SUCCESS);
 }

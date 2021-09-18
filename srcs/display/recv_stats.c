@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 16:57:22 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/12 17:01:41 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/18 13:45:15 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,13 +16,22 @@ void     display_recv(
                     t_ping *ping, void *buffer, t_packet_data *packet_data,
                     ssize_t *bytes_received)
 {
-    struct iphdr *iphdr = (struct iphdr *)buffer;
+    struct iphdr *iphdr     = (struct iphdr *)buffer;
 
     dprintf(STDOUT_FILENO,
         "%zd bytes from %s: icmp->seq=%hu ttl=%hhu time=%.2lf ms\n",
         *bytes_received - IPHDR_SIZE, inet_ntop_handler(ping, &iphdr->saddr),
-        packet_data->sequence, iphdr->ttl,
+        ping->sequence, iphdr->ttl,
         calc_latency(&packet_data->time_sent, &packet_data->time_recv));
+}
+
+void     display_unowned(t_ping *ping, void *buffer, ssize_t *bytes_received)
+{
+    struct iphdr *iphdr     = (struct iphdr *)buffer;
+
+    dprintf(STDERR_FILENO,
+        "ft_ping: received an unowned packet: %zu bytes from %s\n", *bytes_received,
+        inet_ntop_handler(ping, &iphdr->saddr));
 }
 
 void     display_stats(t_ping *ping, t_ping_rtt *ping_rtt)

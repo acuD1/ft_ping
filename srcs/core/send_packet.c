@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/06 16:35:34 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/12 18:00:57 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/18 14:22:52 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,23 +61,23 @@ static void     setup_icmphdr(t_ping *ping, void *packet)
                                     ping->conf.packet_size - IPHDR_SIZE);
 }
 
-void    send_packet(t_ping *ping, char *packet, struct timeval *current)
+void    send_packet(t_ping *ping, struct timeval *current)
 {
     ssize_t         bytes_sent  = 0;
     t_packet_data   packet_data;
 
     ping->sequence++;
-    ft_memset(packet, 0, ping->conf.packet_size);
+    ft_memset(ping->packet, 0, ping->conf.packet_size);
     ft_memset(&packet_data, 0, sizeof(packet_data));
     packet_data.sequence    =   ping->sequence;
     packet_data.status      |=  PACKET_PENDING;
-    setup_iphdr(ping, packet);
-    setup_payload(ping, packet + IPHDR_SIZE + ICMPHDR_SIZE);
-    setup_timeval(packet + ping->conf.packet_size - sizeof(struct timeval),
+    setup_iphdr(ping, ping->packet);
+    setup_payload(ping, ping->packet + IPHDR_SIZE + ICMPHDR_SIZE);
+    setup_timeval(ping->packet + ping->conf.packet_size - sizeof(struct timeval),
         &packet_data, current);
-    setup_icmphdr(ping, packet + IPHDR_SIZE);
+    setup_icmphdr(ping, ping->packet + IPHDR_SIZE);
 
-    bytes_sent = sendto(ping->sockfd, packet, ping->conf.packet_size,
+    bytes_sent = sendto(ping->sockfd, ping->packet, ping->conf.packet_size,
                     MSG_DONTWAIT, (struct sockaddr_in *)&ping->target,
                     sizeof(struct sockaddr_in));
 

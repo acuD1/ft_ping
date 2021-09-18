@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 12:18:38 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/12 13:12:22 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/18 12:57:50 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,6 @@ t_packet_data   *validate_packet(
     struct icmphdr  *response     = (struct icmphdr *)(icmp_area);
 
     if (response->type == ICMP_ECHOREPLY
-        && htons(response->un.echo.id) == ping->conf.pid
         && htons(response->un.echo.sequence) <= ping->sequence)
     {
         if (!(packet = check_packet(ping, (char *)icmp_area + ICMPHDR_SIZE,

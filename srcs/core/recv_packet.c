@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 11:48:32 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/12 17:07:25 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/18 14:30:45 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,14 @@ static void             display_icmp_error(
             ping->buff_ipv4);
 }
 
+static uint8_t owned_packet(t_ping *ping, void *icmp_area)
+{
+    struct icmphdr  *response     = (struct icmphdr *)(icmp_area);
+    uint16_t        id            = htons(response->un.echo.id);
+
+    return (id == 0 || id == ping->conf.pid ? TRUE : FALSE);
+}
+
 static t_packet_data    *process_packet(
                             t_ping *ping, char *buffer, ssize_t *bytes_recv,
                             struct timeval *time_recv)
@@ -36,23 +44,25 @@ static t_packet_data    *process_packet(
     if (*bytes_recv != -1)
     {
         ft_memcpy(&ping->end, time_recv, sizeof(struct timeval));
-        if (!(packet_data = validate_packet(ping, *bytes_recv - IPHDR_SIZE,
-                                time_recv, buffer + IPHDR_SIZE)))
+        if (owned_packet(ping, buffer + IPHDR_SIZE) == TRUE)
         {
-            display_icmp_error(ping, buffer, buffer + IPHDR_SIZE,
-                ping->sequence);
-            ping->errors++;
-            return (NULL);
+            if (!(packet_data = validate_packet(ping, *bytes_recv - IPHDR_SIZE,
+                                    time_recv, buffer + IPHDR_SIZE)))
+            {
+                display_icmp_error(ping, buffer, buffer + IPHDR_SIZE,
+                    ping->sequence);
+                ping->errors++;
+                return (NULL);
+            }
+            return (packet_data);
         }
-        return (packet_data);
+        if (ping->opts & V_OPT)
+            display_unowned(ping, buffer, bytes_recv);
     }
-    else
+    if (discard_time_recv != ping->errors)
     {
-        if (discard_time_recv != ping->errors)
-        {
-            ft_memcpy(&ping->end, time_recv, sizeof(struct timeval));
-            discard_time_recv = ping->errors;
-        }
+        ft_memcpy(&ping->end, time_recv, sizeof(struct timeval));
+        discard_time_recv = ping->errors;
     }
     return (NULL);
 }
@@ -70,7 +80,7 @@ t_packet_data           *recv_packet(
     ft_memset(msg_iov, 0, sizeof(msg_iov));
 
     msg_iov->iov_base   = buffer;
-    msg_iov->iov_len    = sizeof(buffer) * MAX_MTU;
+    msg_iov->iov_len    = sizeof(char) * MAX_MTU;
 
     ft_memcpy(&tmp, &ping->target, sizeof(struct sockaddr_storage));
 
