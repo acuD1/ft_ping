@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/18 14:22:49 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/18 16:01:35 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,13 +39,14 @@
 # define BUILD_PATCH_STRING     STR_VALUE(BUILDP)
 # define BUILD_DATE_STRING      STR_VALUE(DATE)
 
-# define ALLOWED_OPT            "vh"
-# define ALLOWED_OPT_ARG        NULL
+# define ALLOWED_OPT            "vhc"
+# define ALLOWED_OPT_ARG        "c"
 # define ALLOWED_OPT_TAB        NULL
 # define ALLOWED_OPT_TAB_ARG    NULL
 # define UNALLOWED_OPT          1ULL << 63
 # define V_OPT                  1ULL << ('v' - 97)
 # define H_OPT                  1ULL << ('h' - 97)
+# define C_OPT                  1ULL << ('c' - 97)
 
 # define PACKET_SIZE            84
 # define IPHDR_SIZE             20
@@ -62,6 +63,7 @@
 typedef struct                  s_conf
 {
     int                         custom_iphdr;
+    int32_t                     count;
     pid_t                       pid;
     uint16_t                    packet_size;
     uint8_t                      ttl;
@@ -106,11 +108,11 @@ typedef struct                  s_ping
     uint16_t                    received;
     uint16_t                    errors;
     char                        buff_ipv4[INET_ADDRSTRLEN];
-    char                        _PADDING(2);
-    t_conf                      conf;
+    char                        _PADDING(6);
     struct timeval              start;
     struct timeval              end;
     struct sockaddr_storage     target;
+    t_conf                      conf;
 }                               t_ping;
 
 extern volatile sig_atomic_t    g_ping;

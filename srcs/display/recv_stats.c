@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 16:57:22 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/18 13:45:15 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/18 16:21:45 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,8 @@ void     display_unowned(t_ping *ping, void *buffer, ssize_t *bytes_received)
 
 void     display_stats(t_ping *ping, t_ping_rtt *ping_rtt)
 {
+    if (ping->conf.count == 0)
+        dprintf(STDOUT_FILENO, "\n");
     dprintf(STDOUT_FILENO, "--- %s ping statistics ---\n", ping->buff_ipv4);
     dprintf(STDOUT_FILENO, "%hu packets transmitted, %hu received, ",
         ping->sequence, ping->received);

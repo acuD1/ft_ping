@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/29 14:30:22 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/18 14:22:58 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/18 16:18:31 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ uint8_t         exec_ping(t_ping *ping)
     setup_socket(ping);
     gettimeofday_handler(ping, &ping->start);
 
-    while (1)
+    while (ping->conf.count)
     {
         gettimeofday_handler(ping, &current);
         if (g_ping & SEND_PACKET)

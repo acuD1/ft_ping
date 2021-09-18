@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 12:18:38 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/18 12:57:50 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/18 16:19:44 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,7 @@ t_packet_data   *validate_packet(
                 sizeof(struct timeval));
             packet_data->status |= PACKET_RECEIVED;
             ping->received++;
+            ping->conf.count--;
             return (packet_data);
         }
     }
