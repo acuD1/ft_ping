@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 16:57:22 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/18 16:21:45 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/19 14:55:12 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,13 @@ void     display_recv(
 {
     struct iphdr *iphdr     = (struct iphdr *)buffer;
 
-    dprintf(STDOUT_FILENO,
-        "%zd bytes from %s: icmp->seq=%hu ttl=%hhu time=%.2lf ms\n",
+    dprintf(STDOUT_FILENO, "%zd bytes from %s: icmp->seq=%hu ttl=%hhu",
         *bytes_received - IPHDR_SIZE, inet_ntop_handler(ping, &iphdr->saddr),
-        ping->sequence, iphdr->ttl,
-        calc_latency(&packet_data->time_sent, &packet_data->time_recv));
+        ping->sequence, iphdr->ttl);
+    if (ping->conf.payload_size >= TIMEVAL_SIZE)
+        dprintf(STDOUT_FILENO, " time=%.2lf ms",
+            calc_latency(&packet_data->time_sent, &packet_data->time_recv));
+    dprintf(STDOUT_FILENO, "\n");
 }
 
 void     display_unowned(t_ping *ping, void *buffer, ssize_t *bytes_received)
@@ -45,7 +47,7 @@ void     display_stats(t_ping *ping, t_ping_rtt *ping_rtt)
         dprintf(STDOUT_FILENO, "+%hu errors, ", ping->errors);
     dprintf(STDOUT_FILENO, "%.f%% packet loss, time %.f ms\n",
         calc_packet_loss(ping), calc_latency(&ping->start, &ping->end));
-    if (ping->received)
+    if (ping->received && ping->conf.payload_size >= TIMEVAL_SIZE)
         dprintf(STDOUT_FILENO,
             "rtt min/avg/max/mdev = %.3lf/%.3lf/%.3lf/%.3lf ms\n",
             ping_rtt->min, ping_rtt->avg, ping_rtt->max,

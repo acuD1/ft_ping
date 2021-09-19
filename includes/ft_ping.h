@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/18 16:01:35 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/19 14:07:37 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,18 +39,23 @@
 # define BUILD_PATCH_STRING     STR_VALUE(BUILDP)
 # define BUILD_DATE_STRING      STR_VALUE(DATE)
 
-# define ALLOWED_OPT            "vhc"
-# define ALLOWED_OPT_ARG        "c"
+# define ALLOWED_OPT            "vhcds"
+# define ALLOWED_OPT_ARG        "cs"
 # define ALLOWED_OPT_TAB        NULL
 # define ALLOWED_OPT_TAB_ARG    NULL
 # define UNALLOWED_OPT          1ULL << 63
 # define V_OPT                  1ULL << ('v' - 97)
 # define H_OPT                  1ULL << ('h' - 97)
 # define C_OPT                  1ULL << ('c' - 97)
+# define D_OPT                  1ULL << ('d' - 97)
+# define S_OPT                  1ULL << ('s' - 97)
 
-# define PACKET_SIZE            84
+
+
+# define PAYLOAD_SIZE           56
 # define IPHDR_SIZE             20
 # define ICMPHDR_SIZE           8
+# define TIMEVAL_SIZE           16
 # define TTL                    64
 # define MAX_MTU                1500
 
@@ -63,9 +68,10 @@
 typedef struct                  s_conf
 {
     int                         custom_iphdr;
+    int                         so_debug;
     int32_t                     count;
     pid_t                       pid;
-    uint16_t                    packet_size;
+    uint16_t                    payload_size;
     uint8_t                      ttl;
     char                        _PADDING(1);
 }                               t_conf;
@@ -104,15 +110,15 @@ typedef struct                  s_ping
     char                        *packet;
     uint64_t                    opts;
     int                         sockfd;
+    char                        buff_ipv4[INET_ADDRSTRLEN];
     uint16_t                    sequence;
     uint16_t                    received;
     uint16_t                    errors;
-    char                        buff_ipv4[INET_ADDRSTRLEN];
-    char                        _PADDING(6);
+    char                        _PADDING(2);
+    t_conf                      conf;
     struct timeval              start;
     struct timeval              end;
     struct sockaddr_storage     target;
-    t_conf                      conf;
 }                               t_ping;
 
 extern volatile sig_atomic_t    g_ping;

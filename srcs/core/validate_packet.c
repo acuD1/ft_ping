@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 12:18:38 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/18 16:19:44 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/19 14:50:40 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,12 @@ static int       find_sequence(void *current, void *to_find)
 static uint8_t   check_payload(void *payload, ssize_t payload_size)
 {
     char *payload_42 = (char *)payload;
+    size_t  custom_payload_size = 0;
 
-    for (size_t i = 0; i < (uint64_t)payload_size - sizeof(struct timeval); i++)
+    if (payload_size >= TIMEVAL_SIZE)
+        custom_payload_size = TIMEVAL_SIZE;
+
+    for (size_t i = custom_payload_size; i < (size_t)payload_size; i++)
     {
         if (payload_42[i] != 0x42)
             return (FAILURE);
@@ -55,10 +59,11 @@ static t_lst    *check_packet(
     if (!(packet = ft_lstfind(ping->packets,
                         &sequence, (int (*)(void*, void*))find_sequence)))
         return (NULL);
-    if (check_timeval(
-            (char *)payload + ((uint64_t)payload_size - sizeof(struct timeval)),
-            packet) != SUCCESS)
-        return (NULL);
+    if (payload_size >= TIMEVAL_SIZE)
+    {
+        if (check_timeval(payload, packet) != SUCCESS)
+            return (NULL);
+    }
 
     return (packet);
 }
@@ -85,7 +90,8 @@ t_packet_data   *validate_packet(
                 sizeof(struct timeval));
             packet_data->status |= PACKET_RECEIVED;
             ping->received++;
-            ping->conf.count--;
+            if (ping->opts & C_OPT)
+                ping->conf.count--;
             return (packet_data);
         }
     }

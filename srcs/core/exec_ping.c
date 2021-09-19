@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/29 14:30:22 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/18 16:18:31 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/19 14:35:31 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ uint8_t         exec_ping(t_ping *ping)
     ssize_t         bytes_recv      = 0;
     t_packet_data   *packet_data    = NULL;
 
-    if (!(ping->packet = ft_memalloc(ping->conf.packet_size)))
+    if (!(ping->packet = ft_memalloc(ping->conf.payload_size + IPHDR_SIZE + ICMPHDR_SIZE)))
         exit_routine(ping, FAILURE);
 
     print_init(ping);

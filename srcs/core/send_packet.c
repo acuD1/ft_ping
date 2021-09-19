@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/06 16:35:34 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/18 14:22:52 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/19 14:33:30 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,8 @@ static void     setup_iphdr(t_ping *ping, void *packet)
     iphdr->version      = 4;
     iphdr->ihl          = IPHDR_SIZE / 4;
     iphdr->tos          = 0;
-    iphdr->tot_len      = htons(ping->conf.packet_size);
+    iphdr->tot_len      = htons(ping->conf.payload_size
+                            + IPHDR_SIZE + ICMPHDR_SIZE);
     iphdr->id           = 0;
     iphdr->frag_off     = htons(0);
     iphdr->ttl          = ping->conf.ttl;
@@ -32,12 +33,12 @@ static void     setup_iphdr(t_ping *ping, void *packet)
 
 static void     setup_payload(t_ping *ping, void *packet)
 {
-    char    *payload    = (char *)packet;
-    size_t  payload_end = ping->conf.packet_size
-                            - IPHDR_SIZE - ICMPHDR_SIZE
-                            - sizeof(struct timeval);
+    char    *payload            = (char *)packet;
+    size_t  custom_payload_size = 0;
 
-    for (size_t i = 0; i < payload_end; i++)
+    if (ping->conf.payload_size >= TIMEVAL_SIZE)
+        custom_payload_size = TIMEVAL_SIZE;
+    for (size_t i = custom_payload_size; i < ping->conf.payload_size; i++)
         payload[i] = 0x42;
 }
 
@@ -45,8 +46,8 @@ static void     setup_timeval(
                     void *packet, t_packet_data *packet_data,
                     struct timeval *current)
 {
-    ft_memcpy(packet, current, sizeof(struct timeval));
-    ft_memcpy(&packet_data->time_sent, packet, sizeof(struct timeval));
+    ft_memcpy(packet, current, TIMEVAL_SIZE);
+    ft_memcpy(&packet_data->time_sent, packet, TIMEVAL_SIZE);
 
 }
 
@@ -58,7 +59,7 @@ static void     setup_icmphdr(t_ping *ping, void *packet)
     icmphdr->un.echo.id         = htons((uint16_t)ping->conf.pid);
     icmphdr->un.echo.sequence   = htons(ping->sequence);
     icmphdr->checksum           = in_cksum(packet,
-                                    ping->conf.packet_size - IPHDR_SIZE);
+                                    ping->conf.payload_size + ICMPHDR_SIZE);
 }
 
 void    send_packet(t_ping *ping, struct timeval *current)
@@ -67,17 +68,20 @@ void    send_packet(t_ping *ping, struct timeval *current)
     t_packet_data   packet_data;
 
     ping->sequence++;
-    ft_memset(ping->packet, 0, ping->conf.packet_size);
+    ft_memset(ping->packet, 0,
+        ping->conf.payload_size + IPHDR_SIZE + ICMPHDR_SIZE);
     ft_memset(&packet_data, 0, sizeof(packet_data));
     packet_data.sequence    =   ping->sequence;
     packet_data.status      |=  PACKET_PENDING;
     setup_iphdr(ping, ping->packet);
+    if (ping->conf.payload_size >= TIMEVAL_SIZE)
+        setup_timeval(ping->packet + IPHDR_SIZE + ICMPHDR_SIZE,
+            &packet_data, current);
     setup_payload(ping, ping->packet + IPHDR_SIZE + ICMPHDR_SIZE);
-    setup_timeval(ping->packet + ping->conf.packet_size - sizeof(struct timeval),
-        &packet_data, current);
     setup_icmphdr(ping, ping->packet + IPHDR_SIZE);
 
-    bytes_sent = sendto(ping->sockfd, ping->packet, ping->conf.packet_size,
+    bytes_sent = sendto(ping->sockfd, ping->packet,
+                    ping->conf.payload_size + IPHDR_SIZE + ICMPHDR_SIZE,
                     MSG_DONTWAIT, (struct sockaddr_in *)&ping->target,
                     sizeof(struct sockaddr_in));
 
@@ -87,7 +91,7 @@ void    send_packet(t_ping *ping, struct timeval *current)
             ft_lstnew(&packet_data, sizeof(t_packet_data)))))
         exit_routine(ping, FAILURE);
     if (ping->sequence > 0 && ping->received == 0)
-        ft_memcpy(&ping->end, current, sizeof(struct timeval));
+        ft_memcpy(&ping->end, current, TIMEVAL_SIZE);
     alarm(1);
     g_ping = 0;
 }

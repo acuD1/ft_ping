@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/25 16:43:47 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/18 16:17:29 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/19 14:19:01 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,30 @@ uint8_t         set_opts_args(t_ping *ping, int argc, char **argv)
         else
         {
             dprintf(STDERR_FILENO, "ft_ping: option requires an argument -- 'c'\n");
+            print_usage();
+            return (set_opts_args_failure(&opts_args));
+        }
+    }
+    if ((tmp = get_opt_set_db(&opts_args.opt_set, "s")) != NULL)
+    {
+        if (tmp->arg)
+        {
+            int packet_size = ft_atoi(tmp->arg);
+            if (packet_size < 0)
+            {
+                dprintf(STDERR_FILENO, "ft_ping: illegal negative packet size %d\n", packet_size);
+                return (set_opts_args_failure(&opts_args));
+            }
+            if (packet_size > 1472)
+            {
+                dprintf(STDERR_FILENO, "ft_ping: packet size too large: %d. (Maximum 1472)\n", packet_size);
+                    return (set_opts_args_failure(&opts_args));
+            }
+            ping->conf.payload_size = (uint16_t)packet_size;
+        }
+        else
+        {
+            dprintf(STDERR_FILENO, "ft_ping: option requires an argument -- 's'\n");
             print_usage();
             return (set_opts_args_failure(&opts_args));
         }

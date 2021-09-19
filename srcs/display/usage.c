@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/25 16:40:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/12 18:01:56 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/19 14:17:28 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,6 @@ void    print_init(t_ping *ping)
     }
 
     dprintf(STDOUT_FILENO, "PING %s %d(%d) bytes of data.\n", buff_ipv4,
-        ping->conf.packet_size - ICMPHDR_SIZE - IPHDR_SIZE,
-        ping->conf.packet_size);
+        ping->conf.payload_size,
+        ping->conf.payload_size + IPHDR_SIZE + ICMPHDR_SIZE);
 }

@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 11:48:32 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/18 14:30:45 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/19 14:36:26 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ static t_packet_data    *process_packet(
 
     if (*bytes_recv != -1)
     {
-        ft_memcpy(&ping->end, time_recv, sizeof(struct timeval));
+        ft_memcpy(&ping->end, time_recv, TIMEVAL_SIZE);
         if (owned_packet(ping, buffer + IPHDR_SIZE) == TRUE)
         {
             if (!(packet_data = validate_packet(ping, *bytes_recv - IPHDR_SIZE,

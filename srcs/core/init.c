@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/06 13:37:02 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/18 16:18:53 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/19 14:07:57 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ void    init_ping(t_ping *ping)
     ft_memset(ping, 0, sizeof(t_ping));
 
     ping->conf.custom_iphdr = TRUE;
-    ping->conf.packet_size  = PACKET_SIZE;
+    ping->conf.payload_size = PAYLOAD_SIZE;
     ping->conf.ttl          = TTL;
     ping->conf.pid          = getpid();
     ping->conf.count        = 1;
