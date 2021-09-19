@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 16:57:22 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/19 14:55:12 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/19 15:31:39 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,9 @@ void     display_recv(
 {
     struct iphdr *iphdr     = (struct iphdr *)buffer;
 
+    if (ping->opts & DD_OPT)
+        dprintf(STDOUT_FILENO, "[%ld.%ld] ",
+            packet_data->time_recv.tv_sec, packet_data->time_recv.tv_usec);
     dprintf(STDOUT_FILENO, "%zd bytes from %s: icmp->seq=%hu ttl=%hhu",
         *bytes_received - IPHDR_SIZE, inet_ntop_handler(ping, &iphdr->saddr),
         ping->sequence, iphdr->ttl);
