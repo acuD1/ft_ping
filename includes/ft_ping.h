@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/19 16:29:23 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/24 15:27:09 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@
 # define BUILD_PATCH_STRING     STR_VALUE(BUILDP)
 # define BUILD_DATE_STRING      STR_VALUE(DATE)
 
-# define ALLOWED_OPT            "vhcdsD"
+# define ALLOWED_OPT            "vhcdsDf"
 # define ALLOWED_OPT_ARG        "cs"
 # define ALLOWED_OPT_TAB        NULL
 # define ALLOWED_OPT_TAB_ARG    NULL
@@ -50,8 +50,7 @@
 # define D_OPT                  1ULL << ('d' - 97)
 # define DD_OPT                 1ULL << ('D' - 39)
 # define S_OPT                  1ULL << ('s' - 97)
-
-
+# define F_OPT                  1ULL << ('f' - 97)
 
 # define PAYLOAD_SIZE           56
 # define IPHDR_SIZE             20
@@ -62,6 +61,7 @@
 
 # define SEND_PACKET            0x0001
 # define EXIT_PING              0x0002
+# define PENDING_PACKET         0x0004
 
 # define PACKET_RECEIVED        0x0001
 # define PACKET_PENDING         0x0002
@@ -126,6 +126,7 @@ typedef struct                  s_ping
     t_conf                      conf;
     struct timeval              start;
     struct timeval              end;
+    struct timeval              last_send;
     struct sockaddr_storage     target;
 }                               t_ping;
 

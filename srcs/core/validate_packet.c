@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 12:18:38 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/19 14:50:40 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/24 15:36:51 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,12 +54,12 @@ static t_lst    *check_packet(
 {
     t_lst   *packet = NULL;
 
-    if (check_payload(payload, payload_size) != SUCCESS)
+    if ((ping->opts & F_OPT) == 0 && check_payload(payload, payload_size) != SUCCESS)
         return (NULL);
     if (!(packet = ft_lstfind(ping->packets,
                         &sequence, (int (*)(void*, void*))find_sequence)))
         return (NULL);
-    if (payload_size >= TIMEVAL_SIZE)
+    if ((ping->opts & F_OPT) == 0 && payload_size >= TIMEVAL_SIZE)
     {
         if (check_timeval(payload, packet) != SUCCESS)
             return (NULL);

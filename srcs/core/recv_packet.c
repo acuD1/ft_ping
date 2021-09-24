@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 11:48:32 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/19 14:36:26 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/24 16:05:45 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,13 @@ static void             display_icmp_error(
     inet_ntop_handler(ping, &iphdr->saddr);
 
     if (icmphdr->type != ICMP_ECHO)
-        icmp_error_handler(icmphdr->type, icmphdr->code, sequence,
-            ping->buff_ipv4);
+    {
+        if (ping->opts & F_OPT)
+            dprintf(STDERR_FILENO, "E");
+        else
+            icmp_error_handler(icmphdr->type, icmphdr->code, sequence,
+                ping->buff_ipv4);
+    }
 }
 
 static uint8_t owned_packet(t_ping *ping, void *icmp_area)
@@ -91,6 +96,24 @@ t_packet_data           *recv_packet(
     msghdr.msg_flags    = 0;
 
     *bytes_recv = recvmsg(ping->sockfd, &msghdr, MSG_DONTWAIT);
+    // if (ping->opts & F_OPT && *bytes_recv != -1)
+    // {
+    //     ping->received++;
+    //     dprintf(STDOUT_FILENO, "?");
+    //     g_ping |= SEND_PACKET;
+    //     return (NULL);
+    // }
+    // else
+    // {
+    //     struct timeval        res;
+    //     ft_memset(&res, 0, sizeof(struct timeval));
+    //     timersub(time_recv, &ping->last_send, &res);
+    //     if (res.tv_usec > 10000.0 && g_ping & PENDING_PACKET)
+    //     {
+    //         gettimeofday_handler(ping, &ping->last_send);
+    //         g_ping |= SEND_PACKET;
+    //     }
+    // }
 
     return (process_packet(ping, buffer, bytes_recv, time_recv));
 

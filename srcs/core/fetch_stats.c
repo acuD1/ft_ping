@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 16:59:08 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/19 16:47:53 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/24 14:16:28 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,9 +40,12 @@ void     fetch_stats(t_ping *ping)
 
     ft_memset(&ping_rtt, 0, sizeof(t_ping_rtt));
     ft_memset(&ping_ewma, 0, sizeof(t_ping_ewma));
-    ping_ewma.weight = (2.000 / (ping->received + 1.000));
     inet_ntop_handler(ping, (uint32_t *)&tmp->sin_addr);
     ft_lstiter_ctx(ping->packets, &ping_rtt, fetch_ping_rtt);
-    ft_lstiter_ctx(ping->packets, &ping_ewma, fetch_ewma);
+    if (ping->opts & F_OPT && ping->received)
+    {
+        ping_ewma.weight = (2.000 / (ping->received + 1.000));
+        ft_lstiter_ctx(ping->packets, &ping_ewma, fetch_ewma);
+    }
     display_stats(ping, &ping_rtt);
 }
