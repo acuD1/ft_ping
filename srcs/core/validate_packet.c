@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 12:18:38 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/24 15:36:51 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/24 16:54:56 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,13 +85,14 @@ t_packet_data   *validate_packet(
             return (NULL);
         else
         {
+            // dprintf(STDERR_FILENO, "PING |%hu| PONG |%hu|", ping->sequence, htons(response->un.echo.sequence));
+            if (ping->pipe < (ping->sequence - htons(response->un.echo.sequence)))
+                ping->pipe = ping->sequence - htons(response->un.echo.sequence);
             packet_data = (t_packet_data *)packet->content;
             ft_memcpy(&packet_data->time_recv, time_recv,
                 sizeof(struct timeval));
             packet_data->status |= PACKET_RECEIVED;
             ping->received++;
-            if (ping->opts & C_OPT)
-                ping->conf.count--;
             return (packet_data);
         }
     }

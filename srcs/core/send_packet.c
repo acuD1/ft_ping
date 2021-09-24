@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/06 16:35:34 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/24 14:25:36 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/24 16:53:00 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,4 +92,6 @@ void    send_packet(t_ping *ping, struct timeval *current)
         exit_routine(ping, FAILURE);
     if (ping->sequence > 0 && ping->received == 0)
         ft_memcpy(&ping->end, current, TIMEVAL_SIZE);
+    if (ping->opts & C_OPT)
+        ping->conf.count--;
 }

@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/24 15:27:09 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/24 16:25:09 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,7 +122,8 @@ typedef struct                  s_ping
     uint16_t                    sequence;
     uint16_t                    received;
     uint16_t                    errors;
-    char                        _PADDING(2);
+    uint16_t                     pipe;
+    // char                        _PADDING(1);
     t_conf                      conf;
     struct timeval              start;
     struct timeval              end;
