@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 16:59:08 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/24 14:16:28 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/25 12:30:24 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,13 +22,16 @@ static uint8_t  fetch_ewma(void *content, void *context)
 
     #pragma clang diagnostic ignored "-Wfloat-equal"
 
-    latency = calc_latency(&packet_data->time_sent, &packet_data->time_recv);
-    if (ping_ewma->ewma == 0)
+    if (packet_data->status & PACKET_RECEIVED)
     {
-        ping_ewma->ewma = latency;
-        return (SUCCESS);
+        latency = calc_latency(&packet_data->time_sent, &packet_data->time_recv);
+        if (ping_ewma->ewma == 0)
+        {
+            ping_ewma->ewma = latency;
+            return (SUCCESS);
+        }
+        ping_ewma->ewma = (latency * ping_ewma->weight) + (ping_ewma->ewma * (1.000 - ping_ewma->weight));
     }
-    ping_ewma->ewma = (latency * ping_ewma->weight) + (ping_ewma->ewma * (1.000 - ping_ewma->weight));
     return (SUCCESS);
 }
 
@@ -47,5 +50,5 @@ void     fetch_stats(t_ping *ping)
         ping_ewma.weight = (2.000 / (ping->received + 1.000));
         ft_lstiter_ctx(ping->packets, &ping_ewma, fetch_ewma);
     }
-    display_stats(ping, &ping_rtt);
+    display_stats(ping, &ping_rtt, &ping_ewma);
 }

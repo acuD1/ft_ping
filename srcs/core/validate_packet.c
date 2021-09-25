@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 12:18:38 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/24 16:54:56 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/25 14:57:18 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,9 +75,9 @@ t_packet_data   *validate_packet(
     t_lst           *packet       = NULL;
     t_packet_data   *packet_data  = NULL;
     struct icmphdr  *response     = (struct icmphdr *)(icmp_area);
+    uint16_t        sequence      = htons(response->un.echo.sequence);
 
-    if (response->type == ICMP_ECHOREPLY
-        && htons(response->un.echo.sequence) <= ping->sequence)
+    if (response->type == ICMP_ECHOREPLY && sequence <= ping->sequence)
     {
         if (!(packet = check_packet(ping, (char *)icmp_area + ICMPHDR_SIZE,
                             icmp_area_size - ICMPHDR_SIZE,
@@ -85,12 +85,12 @@ t_packet_data   *validate_packet(
             return (NULL);
         else
         {
-            // dprintf(STDERR_FILENO, "PING |%hu| PONG |%hu|", ping->sequence, htons(response->un.echo.sequence));
-            if (ping->pipe < (ping->sequence - htons(response->un.echo.sequence)))
-                ping->pipe = ping->sequence - htons(response->un.echo.sequence);
+            if (ping->pipe < (ping->sequence - sequence))
+                ping->pipe = ping->sequence - sequence;
             packet_data = (t_packet_data *)packet->content;
             ft_memcpy(&packet_data->time_recv, time_recv,
                 sizeof(struct timeval));
+            packet_data->sequence = sequence;
             packet_data->status |= PACKET_RECEIVED;
             ping->received++;
             return (packet_data);

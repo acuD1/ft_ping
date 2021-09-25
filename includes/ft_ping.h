@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/24 16:25:09 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/25 14:58:40 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,8 @@
 # define BUILD_PATCH_STRING     STR_VALUE(BUILDP)
 # define BUILD_DATE_STRING      STR_VALUE(DATE)
 
-# define ALLOWED_OPT            "vhcdsDf"
-# define ALLOWED_OPT_ARG        "cs"
+# define ALLOWED_OPT            "vhcdsDfilq"
+# define ALLOWED_OPT_ARG        "csil"
 # define ALLOWED_OPT_TAB        NULL
 # define ALLOWED_OPT_TAB_ARG    NULL
 # define UNALLOWED_OPT          1ULL << 63
@@ -51,6 +51,9 @@
 # define DD_OPT                 1ULL << ('D' - 39)
 # define S_OPT                  1ULL << ('s' - 97)
 # define F_OPT                  1ULL << ('f' - 97)
+# define I_OPT                  1ULL << ('i' - 97)
+# define L_OPT                  1ULL << ('l' - 97)
+# define Q_OPT                  1ULL << ('l' - 97)
 
 # define PAYLOAD_SIZE           56
 # define IPHDR_SIZE             20
@@ -68,9 +71,11 @@
 
 typedef struct                  s_conf
 {
+    double                      interval;
     int                         custom_iphdr;
     int                         so_debug;
     int32_t                     count;
+    int32_t                     preload;
     pid_t                       pid;
     uint16_t                    payload_size;
     uint8_t                      ttl;
@@ -123,7 +128,7 @@ typedef struct                  s_ping
     uint16_t                    received;
     uint16_t                    errors;
     uint16_t                     pipe;
-    // char                        _PADDING(1);
+    char                        _PADDING(4);
     t_conf                      conf;
     struct timeval              start;
     struct timeval              end;
@@ -168,7 +173,7 @@ t_packet_data                   *validate_packet(
                                     struct timeval *time_received,
                                     void *icmp_area);
 char                            *inet_ntop_handler(t_ping *ping, uint32_t *addr);
-void                            display_stats(t_ping *ping, t_ping_rtt *ping_rtt);
+void                            display_stats(t_ping *ping, t_ping_rtt *ping_rtt, t_ping_ewma *ping_ewma);
 void                            fetch_stats(t_ping *ping);
 void                            display_recv(
                                     t_ping *ping, void *buffer,

@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 16:57:22 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/24 14:19:53 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/25 14:53:04 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ void     display_recv(
             packet_data->time_recv.tv_sec, packet_data->time_recv.tv_usec);
     dprintf(STDOUT_FILENO, "%zd bytes from %s: icmp->seq=%hu ttl=%hhu",
         *bytes_received - IPHDR_SIZE, inet_ntop_handler(ping, &iphdr->saddr),
-        ping->sequence, iphdr->ttl);
+        packet_data->sequence, iphdr->ttl);
     if (ping->conf.payload_size >= TIMEVAL_SIZE)
         dprintf(STDOUT_FILENO, " time=%.2lf ms",
             calc_latency(&packet_data->time_sent, &packet_data->time_recv));
@@ -39,7 +39,7 @@ void     display_unowned(t_ping *ping, void *buffer, ssize_t *bytes_received)
         inet_ntop_handler(ping, &iphdr->saddr));
 }
 
-void     display_stats(t_ping *ping, t_ping_rtt *ping_rtt)
+void     display_stats(t_ping *ping, t_ping_rtt *ping_rtt, t_ping_ewma *ping_ewma)
 {
     if (ping->conf.count == 0)
         dprintf(STDOUT_FILENO, "\n");
@@ -51,10 +51,21 @@ void     display_stats(t_ping *ping, t_ping_rtt *ping_rtt)
     dprintf(STDOUT_FILENO, "%.f%% packet loss, time %.f ms\n",
         calc_packet_loss(ping), calc_latency(&ping->start, &ping->end));
     if (ping->received && ping->conf.payload_size >= TIMEVAL_SIZE)
+    {
         dprintf(STDOUT_FILENO,
-            "rtt min/avg/max/mdev = %.3lf/%.3lf/%.3lf/%.3lf ms\n",
+            "rtt min/avg/max/mdev = %.3lf/%.3lf/%.3lf/%.3lf ms",
             ping_rtt->min, ping_rtt->avg, ping_rtt->max,
             calc_mdev(ping, ping_rtt));
+        if (ping->pipe > 1)
+            dprintf(STDOUT_FILENO, ", pipe %d", ping->pipe);
+        if (ping->opts & F_OPT)
+        {
+            dprintf(STDOUT_FILENO, ", ipg/ewma %.3f/%.3f ms",
+                calc_latency(&ping->start, &ping->end) / (ping->sequence - 1),
+                    ping_ewma->ewma);
+        }
+        dprintf(STDOUT_FILENO, "\n");
+    }
     else
         dprintf(STDOUT_FILENO, "\n");
 }

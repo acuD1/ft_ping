@@ -140,7 +140,7 @@ ifeq ($(DEBUG), g)
 else ifeq ($(DEBUG), fsanitize)
     CFLAGS          =   -fsanitize=address -g3
 else ifeq ($(DEBUG), hard)
-    CFLAGS          +=  -Weverything -fsanitize=address,undefined -DDEBUG
+    CFLAGS          +=  -Weverything -fsanitize=address,undefined,unreachable -DDEBUG
 else ifeq ($(DEBUG), dev)
     CFLAGS          =
 endif
