@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/06 13:37:02 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/19 14:07:57 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/26 12:34:02 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ void    init_ping(t_ping *ping)
 
     signal(SIGINT, sig_handler);
     signal(SIGALRM, sig_handler);
+    signal(SIGVTALRM, sig_handler);
 
     g_ping |= SEND_PACKET;
 }

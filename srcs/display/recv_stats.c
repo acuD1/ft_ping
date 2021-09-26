@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 16:57:22 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/25 14:53:04 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/26 12:05:25 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@ void     display_recv(
                     ssize_t *bytes_received)
 {
     struct iphdr *iphdr     = (struct iphdr *)buffer;
+    double latency          = 0;
 
     if (ping->opts & DD_OPT)
         dprintf(STDOUT_FILENO, "[%ld.%ld] ",
@@ -25,8 +26,13 @@ void     display_recv(
         *bytes_received - IPHDR_SIZE, inet_ntop_handler(ping, &iphdr->saddr),
         packet_data->sequence, iphdr->ttl);
     if (ping->conf.payload_size >= TIMEVAL_SIZE)
-        dprintf(STDOUT_FILENO, " time=%.2lf ms",
-            calc_latency(&packet_data->time_sent, &packet_data->time_recv));
+    {
+        latency = calc_latency(&packet_data->time_sent, &packet_data->time_recv);
+        if (latency < 0.1)
+            dprintf(STDOUT_FILENO, " time=%.3lf ms", latency);
+        else
+            dprintf(STDOUT_FILENO, " time=%.2lf ms", latency);
+    }
     dprintf(STDOUT_FILENO, "\n");
 }
 

@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/06 16:35:34 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/24 16:53:00 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/26 12:06:59 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,10 @@ void    send_packet(t_ping *ping, struct timeval *current)
                     sizeof(struct sockaddr_in));
 
     if (bytes_sent == -1)
+    {
+        printf("?\n");
         ping->errors++;
+    }
     if (!(ft_lstappend(&ping->packets,
             ft_lstnew(&packet_data, sizeof(t_packet_data)))))
         exit_routine(ping, FAILURE);

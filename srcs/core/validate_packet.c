@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 12:18:38 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/25 14:57:18 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/26 12:20:53 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,8 +56,7 @@ static t_lst    *check_packet(
 
     if ((ping->opts & F_OPT) == 0 && check_payload(payload, payload_size) != SUCCESS)
         return (NULL);
-    if (!(packet = ft_lstfind(ping->packets,
-                        &sequence, (int (*)(void*, void*))find_sequence)))
+    if (!(packet = ft_lstfind(ping->packets, &sequence, (int (*)(void*, void*))find_sequence)))
         return (NULL);
     if ((ping->opts & F_OPT) == 0 && payload_size >= TIMEVAL_SIZE)
     {
@@ -85,6 +84,7 @@ t_packet_data   *validate_packet(
             return (NULL);
         else
         {
+            printf("????\n");
             if (ping->pipe < (ping->sequence - sequence))
                 ping->pipe = ping->sequence - sequence;
             packet_data = (t_packet_data *)packet->content;

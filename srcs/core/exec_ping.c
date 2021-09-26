@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/29 14:30:22 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/25 14:46:56 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/26 12:24:50 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,13 +94,16 @@ uint8_t         exec_ping(t_ping *ping)
         }
         else
         {
-            if (ping->opts & F_OPT)
+            if ((ping->opts & Q_OPT) == 0)
             {
-                dprintf(STDOUT_FILENO, "\b");
-                g_ping |= SEND_PACKET;
+                if (ping->opts & F_OPT)
+                {
+                    dprintf(STDOUT_FILENO, "\b");
+                    g_ping |= SEND_PACKET;
+                }
+                else
+                    display_recv(ping, buffer, packet_data, &bytes_recv);
             }
-            else
-                display_recv(ping, buffer, packet_data, &bytes_recv);
         }
     }
 

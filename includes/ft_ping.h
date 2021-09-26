@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/25 14:58:40 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/26 13:23:11 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,10 +39,6 @@
 # define BUILD_PATCH_STRING     STR_VALUE(BUILDP)
 # define BUILD_DATE_STRING      STR_VALUE(DATE)
 
-# define ALLOWED_OPT            "vhcdsDfilq"
-# define ALLOWED_OPT_ARG        "csil"
-# define ALLOWED_OPT_TAB        NULL
-# define ALLOWED_OPT_TAB_ARG    NULL
 # define UNALLOWED_OPT          1ULL << 63
 # define V_OPT                  1ULL << ('v' - 97)
 # define H_OPT                  1ULL << ('h' - 97)
@@ -53,7 +49,13 @@
 # define F_OPT                  1ULL << ('f' - 97)
 # define I_OPT                  1ULL << ('i' - 97)
 # define L_OPT                  1ULL << ('l' - 97)
-# define Q_OPT                  1ULL << ('l' - 97)
+# define Q_OPT                  1ULL << ('q' - 97)
+# define T_OPT                  1ULL << ('t' - 97)
+# define ALLOWED_OPT            "vhcdsDfilqt"
+# define ALLOWED_OPT_ARG        "csilt"
+# define ALLOWED_OPT_TAB        NULL
+# define ALLOWED_OPT_TAB_ARG    NULL
+
 
 # define PAYLOAD_SIZE           56
 # define IPHDR_SIZE             20
@@ -76,10 +78,11 @@ typedef struct                  s_conf
     int                         so_debug;
     int32_t                     count;
     int32_t                     preload;
+    int32_t                     timeout;
     pid_t                       pid;
     uint16_t                    payload_size;
-    uint8_t                      ttl;
-    char                        _PADDING(1);
+    uint8_t                     ttl;
+    char                        _PADDING(5);
 }                               t_conf;
 
 typedef struct                  s_ping_global

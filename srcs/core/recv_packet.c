@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 11:48:32 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/24 16:29:48 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/26 12:20:26 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ static void             display_icmp_error(
 
     if (icmphdr->type != ICMP_ECHO)
     {
+        ping->errors++;
         if (ping->opts & F_OPT)
             dprintf(STDERR_FILENO, "E");
         else
@@ -51,12 +52,10 @@ static t_packet_data    *process_packet(
         ft_memcpy(&ping->end, time_recv, TIMEVAL_SIZE);
         if (owned_packet(ping, buffer + IPHDR_SIZE) == TRUE)
         {
-            if (!(packet_data = validate_packet(ping, *bytes_recv - IPHDR_SIZE,
-                                    time_recv, buffer + IPHDR_SIZE)))
+            if (!(packet_data = validate_packet(ping, *bytes_recv - IPHDR_SIZE, time_recv, buffer + IPHDR_SIZE)))
             {
                 display_icmp_error(ping, buffer, buffer + IPHDR_SIZE,
                     ping->sequence);
-                ping->errors++;
                 return (NULL);
             }
             return (packet_data);
@@ -96,24 +95,6 @@ t_packet_data           *recv_packet(
     msghdr.msg_flags    = 0;
 
     *bytes_recv = recvmsg(ping->sockfd, &msghdr, MSG_DONTWAIT);
-    // if (ping->opts & F_OPT && *bytes_recv != -1)
-    // {
-    //     ping->received++;
-    //     dprintf(STDOUT_FILENO, "?");
-    //     g_ping |= SEND_PACKET;
-    //     return (NULL);
-    // }
-    // else
-    // {
-    //     struct timeval        res;
-    //     ft_memset(&res, 0, sizeof(struct timeval));
-    //     timersub(time_recv, &ping->last_send, &res);
-    //     if (res.tv_usec > 10000.0 && g_ping & PENDING_PACKET)
-    //     {
-    //         gettimeofday_handler(ping, &ping->last_send);
-    //         g_ping |= SEND_PACKET;
-    //     }
-    // }
 
     return (process_packet(ping, buffer, bytes_recv, time_recv));
 
