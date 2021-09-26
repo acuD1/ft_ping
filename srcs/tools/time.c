@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/07 16:33:30 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/12 17:53:52 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/26 15:29:28 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,8 +29,8 @@ double  calc_latency(void *t_start, void *t_end)
     double start;
     double end;
 
-    start = tmp_t_start.tv_sec * 1000000.0 + tmp_t_start.tv_usec;
-    end = tmp_t_end.tv_sec * 1000000.0 + tmp_t_end.tv_usec;
+    start = (double)tmp_t_start.tv_sec * 1000000.0 + (double)tmp_t_start.tv_usec;
+    end = (double)tmp_t_end.tv_sec * 1000000.0 + (double)tmp_t_end.tv_usec;
 
     return ((end - start) / 1000.0);
 }

@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/26 13:23:11 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/26 16:47:56 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 # include <unistd.h>
 # include <netinet/in.h>
 # include <netinet/ip.h>
+# include <netinet/ip6.h>
 # include <netinet/ip_icmp.h>
 # include <sys/types.h>
 # include <sys/socket.h>
@@ -51,7 +52,8 @@
 # define L_OPT                  1ULL << ('l' - 97)
 # define Q_OPT                  1ULL << ('q' - 97)
 # define T_OPT                  1ULL << ('t' - 97)
-# define ALLOWED_OPT            "vhcdsDfilqt"
+# define N_OPT                  1ULL << ('n' - 97)
+# define ALLOWED_OPT            "vhcdsDfilqtn"
 # define ALLOWED_OPT_ARG        "csilt"
 # define ALLOWED_OPT_TAB        NULL
 # define ALLOWED_OPT_TAB_ARG    NULL
@@ -70,6 +72,9 @@
 
 # define PACKET_RECEIVED        0x0001
 # define PACKET_PENDING         0x0002
+
+# define  IPV4_MODE               0x0001
+# define  IPV6_MODE               0x0002
 
 typedef struct                  s_conf
 {
@@ -123,15 +128,16 @@ typedef struct                  s_packet_data
 typedef struct                  s_ping
 {
     t_lst                      *packets;
-    char                        *packet;
     uint64_t                    opts;
-    int                         sockfd;
+    char                        *packet;
     char                        buff_ipv4[INET_ADDRSTRLEN];
+    int                         sockfd;
     uint16_t                    sequence;
     uint16_t                    received;
     uint16_t                    errors;
     uint16_t                     pipe;
-    char                        _PADDING(4);
+    uint8_t                     mode;
+    char                        _PADDING(3);
     t_conf                      conf;
     struct timeval              start;
     struct timeval              end;
@@ -155,10 +161,10 @@ uint8_t                         set_opts_args(
 void                            print_unallowed_opt(t_opts_args *opts_args);
 void                            print_usage(void);
 void                            print_version(void);
-uint8_t                         resolve_target_ipv4(
+uint8_t                         resolve_target(
                                     t_ping *ping, char *target);
 void                            init_ping(t_ping *ping);
-void                            print_init(t_ping *ping);
+void                            print_init_handler(t_ping *ping);
 void                            sig_handler(int signo);
 void                            send_packet(
                                     t_ping *ping, struct timeval *current);

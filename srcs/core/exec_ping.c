@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/29 14:30:22 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/26 12:24:50 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/26 16:14:43 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ uint8_t         exec_ping(t_ping *ping)
     if (!(ping->packet = ft_memalloc(ping->conf.payload_size + IPHDR_SIZE + ICMPHDR_SIZE)))
         exit_routine(ping, FAILURE);
 
-    print_init(ping);
+    print_init_handler(ping);
     setup_socket(ping);
     gettimeofday_handler(ping, &ping->start);
 
@@ -78,13 +78,13 @@ uint8_t         exec_ping(t_ping *ping)
             {
                 ft_memset(&res, 0, sizeof(struct timeval));
                 timersub(&current, &ping->start, &res);
-                double total_micro_second = res.tv_sec * 1000000.0;
-                total_micro_second += res.tv_usec;
+                double total_micro_second = (double)res.tv_sec * 1000000.0;
+                total_micro_second += (double)res.tv_usec;
                 if (!ping->received || (ping->received && ((double)ping->received / total_micro_second) < 0.0001))
                 {
                     ft_memset(&res, 0, sizeof(struct timeval));
                     timersub(&current, &last_send, &res);
-                    if (res.tv_usec > 20000.0 && g_ping & PENDING_PACKET)
+                    if ((double)res.tv_usec > 20000.0 && g_ping & PENDING_PACKET)
                     {
                         gettimeofday_handler(ping, &last_send);
                         g_ping |= SEND_PACKET;

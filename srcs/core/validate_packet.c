@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 12:18:38 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/26 12:20:53 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/26 15:31:41 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,6 @@ t_packet_data   *validate_packet(
             return (NULL);
         else
         {
-            printf("????\n");
             if (ping->pipe < (ping->sequence - sequence))
                 ping->pipe = ping->sequence - sequence;
             packet_data = (t_packet_data *)packet->content;
