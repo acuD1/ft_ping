@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 11:48:32 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/26 12:20:26 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/27 18:05:21 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ static void             display_icmp_error(
             dprintf(STDERR_FILENO, "E");
         else
             icmp_error_handler(icmphdr->type, icmphdr->code, sequence,
-                ping->buff_ipv4);
+                ping->buff_ip);
     }
 }
 

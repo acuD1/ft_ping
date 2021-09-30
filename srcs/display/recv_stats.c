@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 16:57:22 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/26 12:05:25 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/29 16:41:14 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,9 +22,26 @@ void     display_recv(
     if (ping->opts & DD_OPT)
         dprintf(STDOUT_FILENO, "[%ld.%ld] ",
             packet_data->time_recv.tv_sec, packet_data->time_recv.tv_usec);
-    dprintf(STDOUT_FILENO, "%zd bytes from %s: icmp->seq=%hu ttl=%hhu",
-        *bytes_received - IPHDR_SIZE, inet_ntop_handler(ping, &iphdr->saddr),
-        packet_data->sequence, iphdr->ttl);
+    if (ping->mode == IPV4_MODE)
+        inet_ntop_handler(ping, (uint32_t *)&((struct sockaddr_in *)&ping->target)->sin_addr);
+    else
+        inet_ntop_handler(ping, (uint32_t *)&((struct sockaddr_in6 *)&ping->target)->sin6_addr);
+
+    if (ping->conf.dns && (ping->opts & N_OPT) == 0)
+    {
+        dprintf(STDOUT_FILENO, "%zd bytes from %s (%s): icmp->seq=%hu ttl=%hhu",
+            *bytes_received - IPHDR_SIZE, ping->buff_dns, ping->buff_ip,
+            packet_data->sequence, iphdr->ttl);
+    }
+    else
+    {
+        dprintf(STDOUT_FILENO, "%zd bytes from %s: icmp->seq=%hu ttl=%hhu",
+            *bytes_received - IPHDR_SIZE, ping->buff_ip,
+            packet_data->sequence, iphdr->ttl);
+    }
+
+
+
     if (ping->conf.payload_size >= TIMEVAL_SIZE)
     {
         latency = calc_latency(&packet_data->time_sent, &packet_data->time_recv);
@@ -49,7 +66,7 @@ void     display_stats(t_ping *ping, t_ping_rtt *ping_rtt, t_ping_ewma *ping_ewm
 {
     if (ping->conf.count == 0)
         dprintf(STDOUT_FILENO, "\n");
-    dprintf(STDOUT_FILENO, "--- %s ping statistics ---\n", ping->buff_ipv4);
+    dprintf(STDOUT_FILENO, "--- %s ping statistics ---\n", ping->conf.diff_dns ? ping->buff_target : ping->conf.dns ? ping->buff_dns : ping->buff_ip);
     dprintf(STDOUT_FILENO, "%hu packets transmitted, %hu received, ",
         ping->sequence, ping->received);
     if (ping->errors)

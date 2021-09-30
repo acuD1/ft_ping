@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 16:46:20 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/12 17:53:05 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/29 17:20:10 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,14 +14,45 @@
 
 char    *inet_ntop_handler(t_ping *ping, uint32_t *addr)
 {
-    ft_memset(&ping->buff_ipv4, 0, sizeof(ping->buff_ipv4));
-    if (!(inet_ntop(AF_INET, addr, ping->buff_ipv4, sizeof(ping->buff_ipv4))))
+    ft_memset(&ping->buff_ip, 0, sizeof(ping->buff_ip));
+    if (!(inet_ntop(ping->mode == IPV4_MODE ? AF_INET : AF_INET6, addr, ping->buff_ip, sizeof(ping->buff_ip))))
     {
         dprintf(STDERR_FILENO, "ft_ping: inet_ntop(): %s\n", strerror(errno));
         exit_routine(ping, FAILURE);
     }
 
-    return (ping->buff_ipv4);
+    return (ping->buff_ip);
+}
+
+uint8_t    inet_pton_handler(t_ping *ping, char *target)
+{
+    u_char  buff[sizeof(struct in6_addr)];
+    ft_memset(&buff, 0, sizeof(struct in6_addr));
+
+    if (!inet_pton(ping->mode == IPV4_MODE ? AF_INET : AF_INET6, target, buff))
+        return FALSE;
+    return (TRUE);
+}
+
+void      getnameinfo_handler(t_ping *ping)
+{
+    int     status = 0;
+    struct sockaddr_in6 sa6 = *(struct sockaddr_in6 *)&ping->target;
+    struct sockaddr_in sa = *(struct sockaddr_in *)&ping->target;
+    ft_memset(ping->buff_dns, 0, sizeof(ping->buff_dns));
+    if ((status = getnameinfo( ping->mode == IPV4_MODE ? (struct sockaddr *)&sa : (struct sockaddr *)&sa6,
+                    ping->mode == IPV4_MODE ? sizeof(sa) : sizeof(sa6), ping->buff_dns,
+                    sizeof(ping->buff_dns), NULL, 0, NI_NAMEREQD)) != 0)
+                getnameinfo_error_handler(ping, status);
+    inet_pton_handler(ping, ping->mode == IPV4_MODE ? (uint32_t *))
+    // dprintf(STDERR_FILENO, "IP |%s|\n", ping->buff_ip);
+
+    // ft_memset(ping->buff_dns, 0, sizeof(ping->buff_dns));
+    // if ((status = getnameinfo((struct sockaddr *)&ping->target,
+    //                 sizeof(struct sockaddr), ping->buff_dns,
+    //                 sizeof(ping->buff_dns), NULL, 0, NI_NAMEREQD)) != 0)
+    //             getnameinfo_error_handler(ping, status);
+    ping->conf.dns = TRUE;
 }
 
 uint16_t in_cksum(void *buffer, size_t len)

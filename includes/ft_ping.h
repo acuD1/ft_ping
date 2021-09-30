@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/26 15:25:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/26 16:47:56 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/29 16:42:10 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,9 @@ typedef struct                  s_conf
     pid_t                       pid;
     uint16_t                    payload_size;
     uint8_t                     ttl;
-    char                        _PADDING(5);
+    uint8_t                     dns;
+    uint8_t                     diff_dns;
+    char                        _PADDING(3);
 }                               t_conf;
 
 typedef struct                  s_ping_global
@@ -128,15 +130,17 @@ typedef struct                  s_packet_data
 typedef struct                  s_ping
 {
     t_lst                      *packets;
-    uint64_t                    opts;
     char                        *packet;
-    char                        buff_ipv4[INET_ADDRSTRLEN];
+    uint64_t                    opts;
     int                         sockfd;
     uint16_t                    sequence;
     uint16_t                    received;
     uint16_t                    errors;
     uint16_t                     pipe;
     uint8_t                     mode;
+    char                        buff_ip[INET6_ADDRSTRLEN];
+    char                        buff_dns[NI_MAXHOST];
+    char                        buff_target[NI_MAXHOST];
     char                        _PADDING(3);
     t_conf                      conf;
     struct timeval              start;
@@ -190,6 +194,9 @@ void                            display_recv(
                                     ssize_t *bytes_received);
 uint16_t                        in_cksum(void *buffer, size_t len);
 void                            display_unowned(t_ping *ping, void *buffer, ssize_t *bytes_received);
+void                            getnameinfo_error_handler(t_ping *ping, int status);
+uint8_t                         inet_pton_handler(t_ping *ping, char *target);
+void                            getnameinfo_handler(t_ping *ping);
 
 
 /* DEBUG */

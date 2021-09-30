@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/25 16:38:12 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/12 18:03:50 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/29 15:58:27 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,4 +144,28 @@ void    icmp_error_handler(
     if (bad_code != 0)
         dprintf(STDERR_FILENO, "%hhu", bad_code);
     dprintf(STDERR_FILENO, "\n");
+}
+
+void    getnameinfo_error_handler(t_ping *ping, int status)
+{
+    char    *error  = NULL;
+    dprintf(STDERR_FILENO, "STATUS |%d|\n", status);
+
+    switch (status)
+    {
+        case EAI_AGAIN:
+            error = "The name could not be resolved at this time. Try again later";
+            break ;
+        case EAI_FAIL:
+            error = "A nonrecoverable error occurred.";
+            break ;
+        case EAI_MEMORY:
+            error = "Out of memory.";
+            break ;
+        case EAI_SYSTEM:
+            error = strerror(errno);
+            break ;
+    }
+    dprintf(STDERR_FILENO, "ft_ping: getnameinfo(): %s\n", error);
+    exit_routine(ping, FAILURE);
 }
