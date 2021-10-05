@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/12 16:46:20 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/29 17:20:10 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/30 19:17:02 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ void      getnameinfo_handler(t_ping *ping)
                     ping->mode == IPV4_MODE ? sizeof(sa) : sizeof(sa6), ping->buff_dns,
                     sizeof(ping->buff_dns), NULL, 0, NI_NAMEREQD)) != 0)
                 getnameinfo_error_handler(ping, status);
-    inet_pton_handler(ping, ping->mode == IPV4_MODE ? (uint32_t *))
+    // inet_ntop_handler(ping, ping->mode == IPV4_MODE ? (uint32_t *)&sa.sin_addr : (uint32_t * )&sa6.sin6_addr);
     // dprintf(STDERR_FILENO, "IP |%s|\n", ping->buff_ip);
 
     // ft_memset(ping->buff_dns, 0, sizeof(ping->buff_dns));

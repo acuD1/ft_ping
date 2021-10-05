@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/25 16:40:59 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/29 16:41:42 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/30 19:19:40 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,8 +51,12 @@ void    print_init_handler(t_ping *ping)
             ping->conf.payload_size,
             ping->conf.payload_size + IPHDR_SIZE + ICMPHDR_SIZE);
     }
-    dprintf(STDOUT_FILENO, "PING %s (%s) %d(%d) bytes of data.\n", ping->conf.dns ? ping->buff_dns : ping->buff_ip,
-        ping->buff_ip,
-        ping->conf.payload_size,
-        ping->conf.payload_size + IPHDR_SIZE + ICMPHDR_SIZE);
+    else
+    {
+        dprintf(STDOUT_FILENO, "PING %s (%s) %d(%d) bytes of data.\n", ping->conf.dns ? ping->buff_dns : ping->buff_ip,
+            ping->buff_ip,
+            ping->conf.payload_size,
+            ping->conf.payload_size + IPHDR_SIZE + ICMPHDR_SIZE);
+
+    }
 }

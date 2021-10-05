@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/06 13:34:50 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/29 16:44:05 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/09/30 19:18:53 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ uint8_t resolve_target(t_ping *ping, char *target)
                     ping->conf.diff_dns = TRUE;
                 }
             }
-            // break ;
+            break ;
         }
         if (tmp->ai_family == PF_INET)
         {
@@ -76,11 +76,11 @@ uint8_t resolve_target(t_ping *ping, char *target)
                     ping->conf.diff_dns = TRUE;
                 }
             }
-            // break ;
+            break ;
         }
-        dprintf(STDERR_FILENO, "TARGET |%s|\nDNS |%s|\nIP |%s|\n", ping->buff_target, ping->buff_dns, ping->buff_ip);
-        exit_routine(ping, FAILURE);
+        // exit_routine(ping, FAILURE);
     }
+    dprintf(STDERR_FILENO, "PING_MODE |%s|\nTARGET |%s|\nDNS |%s|\nIP |%s|\n", ping->mode == IPV4_MODE ? "IPV4" : "IPV6", ping->buff_target, ping->buff_dns, ping->buff_ip);
 
     /* Cleaning */
     for (struct addrinfo *tmp = NULL; res; res = tmp)
