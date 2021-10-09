@@ -14,21 +14,28 @@
 
 static void     setup_iphdr(t_ping *ping, void *packet)
 {
-    struct iphdr *iphdr = (struct iphdr *)packet;
+    if (ping->mode == IPV4_MODE)
+    {
+        struct iphdr *iphdr = (struct iphdr *)packet;
 
-    iphdr->version      = 4;
-    iphdr->ihl          = IPHDR_SIZE / 4;
-    iphdr->tos          = 0;
-    iphdr->tot_len      = htons(ping->conf.payload_size
-                            + IPHDR_SIZE + ICMPHDR_SIZE);
-    iphdr->id           = 0;
-    iphdr->frag_off     = htons(0);
-    iphdr->ttl          = ping->conf.ttl;
-    iphdr->protocol     = IPPROTO_ICMP;
-    iphdr->check        = 0;
-    iphdr->saddr        = INADDR_ANY;
-    iphdr->daddr
-        = ((struct sockaddr_in *)&ping->target)->sin_addr.s_addr;
+        iphdr->version      = 4;
+        iphdr->ihl          = IPHDR_SIZE / 4;
+        iphdr->tos          = 0;
+        iphdr->tot_len      = htons(ping->conf.payload_size
+                                + IPHDR_SIZE + ICMPHDR_SIZE);
+        iphdr->id           = 0;
+        iphdr->frag_off     = htons(0);
+        iphdr->ttl          = ping->conf.ttl;
+        iphdr->protocol     = IPPROTO_ICMP;
+        iphdr->check        = 0;
+        iphdr->saddr        = INADDR_ANY;
+        iphdr->daddr
+            = ((struct sockaddr_in *)&ping->target)->sin_addr.s_addr;
+    }
+    else
+    {
+        struct ip6_hdr *ip6_hdr = (struct ip6_hdr *)packet;
+    }
 }
 
 static void     setup_payload(t_ping *ping, void *packet)
@@ -68,8 +75,7 @@ void    send_packet(t_ping *ping, struct timeval *current)
     t_packet_data   packet_data;
 
     ping->sequence++;
-    ft_memset(ping->packet, 0,
-        ping->conf.payload_size + IPHDR_SIZE + ICMPHDR_SIZE);
+    ft_memset(ping->packet, 0, ping->packet_size);
     ft_memset(&packet_data, 0, sizeof(packet_data));
     packet_data.sequence    =   ping->sequence;
     packet_data.status      |=  PACKET_PENDING;
@@ -87,7 +93,7 @@ void    send_packet(t_ping *ping, struct timeval *current)
 
     if (bytes_sent == -1)
     {
-        printf("?\n");
+        printf("Ping error\n");
         ping->errors++;
     }
     if (!(ft_lstappend(&ping->packets,

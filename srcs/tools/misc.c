@@ -39,19 +39,14 @@ void      getnameinfo_handler(t_ping *ping)
     int     status = 0;
     struct sockaddr_in6 sa6 = *(struct sockaddr_in6 *)&ping->target;
     struct sockaddr_in sa = *(struct sockaddr_in *)&ping->target;
+
     ft_memset(ping->buff_dns, 0, sizeof(ping->buff_dns));
-    if ((status = getnameinfo( ping->mode == IPV4_MODE ? (struct sockaddr *)&sa : (struct sockaddr *)&sa6,
+    if ((status = getnameinfo(
+                    ping->mode == IPV4_MODE ? (struct sockaddr *)&sa : (struct sockaddr *)&sa6,
                     ping->mode == IPV4_MODE ? sizeof(sa) : sizeof(sa6), ping->buff_dns,
                     sizeof(ping->buff_dns), NULL, 0, NI_NAMEREQD)) != 0)
                 getnameinfo_error_handler(ping, status);
-    // inet_ntop_handler(ping, ping->mode == IPV4_MODE ? (uint32_t *)&sa.sin_addr : (uint32_t * )&sa6.sin6_addr);
-    // dprintf(STDERR_FILENO, "IP |%s|\n", ping->buff_ip);
-
-    // ft_memset(ping->buff_dns, 0, sizeof(ping->buff_dns));
-    // if ((status = getnameinfo((struct sockaddr *)&ping->target,
-    //                 sizeof(struct sockaddr), ping->buff_dns,
-    //                 sizeof(ping->buff_dns), NULL, 0, NI_NAMEREQD)) != 0)
-    //             getnameinfo_error_handler(ping, status);
+    inet_ntop_handler(ping, ping->mode == IPV4_MODE ? (uint32_t *)&sa.sin_addr : (uint32_t * )&sa6.sin6_addr);
     ping->conf.dns = TRUE;
 }
 

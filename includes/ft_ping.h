@@ -61,6 +61,7 @@
 
 # define PAYLOAD_SIZE           56
 # define IPHDR_SIZE             20
+# define IPV6HDR_SIZE           40
 # define ICMPHDR_SIZE           8
 # define TIMEVAL_SIZE           16
 # define TTL                    64
@@ -132,6 +133,7 @@ typedef struct                  s_ping
     t_lst                      *packets;
     char                        *packet;
     uint64_t                    opts;
+    size_t                      packet_size;
     int                         sockfd;
     uint16_t                    sequence;
     uint16_t                    received;

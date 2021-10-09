@@ -21,7 +21,7 @@ uint8_t         exec_ping(t_ping *ping)
     ssize_t         bytes_recv      = 0;
     t_packet_data   *packet_data    = NULL;
 
-    if (!(ping->packet = ft_memalloc(ping->conf.payload_size + IPHDR_SIZE + ICMPHDR_SIZE)))
+    if (!(ping->packet = ft_memalloc(ping->packet_size)))
         exit_routine(ping, FAILURE);
 
     print_init_handler(ping);

@@ -80,6 +80,13 @@ uint8_t resolve_target(t_ping *ping, char *target)
         }
         // exit_routine(ping, FAILURE);
     }
+
+    ping->packet_size = ping->conf.payload_size;
+    ping->packet_size += ping->mode == IPV4_MODE ? IPHDR_SIZE : IPV6HDR_SIZE;
+    ping->packet_size += ICMPHDR_SIZE;
+
+    dprintf(STDERR_FILENO, "[DEBUG] PACKET_SIZE |%zu|\n", ping->packet_size);
+
     dprintf(STDERR_FILENO, "PING_MODE |%s|\nTARGET |%s|\nDNS |%s|\nIP |%s|\n", ping->mode == IPV4_MODE ? "IPV4" : "IPV6", ping->buff_target, ping->buff_dns, ping->buff_ip);
 
     /* Cleaning */

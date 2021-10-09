@@ -46,17 +46,16 @@ void    print_init_handler(t_ping *ping)
 
     if (ping->conf.diff_dns)
     {
-        dprintf(STDOUT_FILENO, "PING %s(%s (%s)) %d(%d) bytes of data.\n", ping->buff_target, ping->buff_dns,
-            ping->buff_ip,
-            ping->conf.payload_size,
-            ping->conf.payload_size + IPHDR_SIZE + ICMPHDR_SIZE);
+        dprintf(STDOUT_FILENO, "PING %s(%s (%s)) ", ping->buff_target, ping->buff_dns, ping->buff_ip);
     }
     else
     {
-        dprintf(STDOUT_FILENO, "PING %s (%s) %d(%d) bytes of data.\n", ping->conf.dns ? ping->buff_dns : ping->buff_ip,
-            ping->buff_ip,
-            ping->conf.payload_size,
-            ping->conf.payload_size + IPHDR_SIZE + ICMPHDR_SIZE);
-
+        dprintf(STDOUT_FILENO, "PING %s (%s) ", ping->conf.dns ? ping->buff_dns : ping->buff_ip, ping->buff_ip);
     }
+
+    if (ping->mode == IPV4_MODE)
+        dprintf(STDOUT_FILENO, "%d(%d) bytes of data.\n", ping->conf.payload_size, ping->packet_size);
+    else
+        dprintf(STDOUT_FILENO, "%d data bytes\n", ping->conf.payload_size);
+
 }
