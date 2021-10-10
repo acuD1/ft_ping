@@ -41,8 +41,8 @@ uint8_t resolve_target(t_ping *ping, char *target)
         if (tmp->ai_family == PF_INET6)
         {
             ping->mode |= IPV6_MODE;
-            ((struct sockaddr_in6 *)&ping->target)->sin6_addr.__in6_u
-                = ((struct sockaddr_in6 *)res->ai_addr)->sin6_addr.__in6_u;
+            ((struct sockaddr_in6 *)&ping->target)->sin6_addr
+                = ((struct sockaddr_in6 *)res->ai_addr)->sin6_addr;
             ((struct sockaddr_in6 *)&ping->target)->sin6_port
                 = htons(0);
             ((struct sockaddr_in6 *)&ping->target)->sin6_family

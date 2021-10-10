@@ -22,6 +22,7 @@
 # include <netinet/ip.h>
 # include <netinet/ip6.h>
 # include <netinet/ip_icmp.h>
+# include <netinet/icmp6.h>
 # include <sys/types.h>
 # include <sys/socket.h>
 # include <netdb.h>
@@ -30,6 +31,9 @@
 # include <sys/time.h>
 # include <string.h>
 # include <errno.h>
+#include <ifaddrs.h>
+#include <sys/types.h>
+#include <net/if.h>
 
 # define errno                  (*__errno_location ())
 

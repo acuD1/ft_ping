@@ -50,7 +50,7 @@ static t_packet_data    *process_packet(
     if (*bytes_recv != -1)
     {
         ft_memcpy(&ping->end, time_recv, TIMEVAL_SIZE);
-        if (owned_packet(ping, buffer + IPHDR_SIZE) == TRUE)
+        if (owned_packet(ping, ping->mode == IPV4_MODE ? buffer + IPHDR_SIZE : buffer + IPV6HDR_SIZE) == TRUE)
         {
             if (!(packet_data = validate_packet(ping, *bytes_recv - IPHDR_SIZE, time_recv, buffer + IPHDR_SIZE)))
             {
@@ -88,8 +88,16 @@ t_packet_data           *recv_packet(
 
     ft_memcpy(&tmp, &ping->target, sizeof(struct sockaddr_storage));
 
-    msghdr.msg_name     = (struct sockaddr_in *)&tmp;
-    msghdr.msg_namelen  = sizeof((struct sockaddr_in *)&tmp);
+    if (ping->mode == IPV4_MODE)
+    {
+        msghdr.msg_name     = (struct sockaddr_in *)&tmp;
+        msghdr.msg_namelen  = sizeof((struct sockaddr_in *)&tmp);
+    }
+    else
+    {
+        msghdr.msg_name     = (struct sockaddr_in6 *)&tmp;
+        msghdr.msg_namelen  = sizeof((struct sockaddr_in6 *)&tmp);
+    }
     msghdr.msg_iov      = msg_iov;
     msghdr.msg_iovlen   = 1;
     msghdr.msg_flags    = 0;

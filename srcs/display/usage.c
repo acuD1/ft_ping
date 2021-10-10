@@ -54,7 +54,7 @@ void    print_init_handler(t_ping *ping)
     }
 
     if (ping->mode == IPV4_MODE)
-        dprintf(STDOUT_FILENO, "%d(%d) bytes of data.\n", ping->conf.payload_size, ping->packet_size);
+        dprintf(STDOUT_FILENO, "%d(%zu) bytes of data.\n", ping->conf.payload_size, ping->packet_size);
     else
         dprintf(STDOUT_FILENO, "%d data bytes\n", ping->conf.payload_size);
 

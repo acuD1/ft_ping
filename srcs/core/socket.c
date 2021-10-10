@@ -31,12 +31,26 @@ void    setup_socket(t_ping *ping)
         }
     }
 
-    if (setsockopt(ping->sockfd, ping->mode == IPV4_MODE ? IPPROTO_IP : IPPROTO_IPV6, IP_HDRINCL,
-        &ping->conf.custom_iphdr, sizeof(ping->conf.custom_iphdr)) != SUCCESS)
+    if (ping->mode == IPV4_MODE)
     {
-        dprintf(STDERR_FILENO, "ft_ping: setsockopt(): %s\n", strerror(errno));
-        exit_routine(ping, FAILURE);
+        if (setsockopt(ping->sockfd, IPPROTO_IP, IP_HDRINCL,
+            &ping->conf.custom_iphdr, sizeof(ping->conf.custom_iphdr)) != SUCCESS)
+        {
+            dprintf(STDERR_FILENO, "ft_ping: setsockopt(): %s\n", strerror(errno));
+            exit_routine(ping, FAILURE);
+        }
     }
+    else
+    {
+        if (setsockopt(ping->sockfd, IPPROTO_IPV6, IPV6_HDRINCL,
+            &ping->conf.custom_iphdr, sizeof(ping->conf.custom_iphdr)) != SUCCESS)
+        {
+            dprintf(STDERR_FILENO, "ft_ping: setsockopt(): %s\n", strerror(errno));
+            exit_routine(ping, FAILURE);
+        }
+
+    }
+
 
     if (ping->opts & D_OPT)
     {
