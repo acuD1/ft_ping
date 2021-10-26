@@ -102,7 +102,7 @@ static void     setup_icmphdr(t_ping *ping, void *packet)
     icmphdr->type               = ICMP_ECHO;
     icmphdr->un.echo.id         = htons((uint16_t)ping->conf.pid);
     icmphdr->un.echo.sequence   = htons(ping->sequence);
-    icmphdr->checksum           = 0;
+    icmphdr->checksum           = in_cksum(packet, ping->packet_size - IPHDR_SIZE);
 }
 
 void        set_buff_ip6_hdr(char *buff_checksum, struct ip6_hdr *ip6_hdr)

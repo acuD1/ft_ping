@@ -14,15 +14,19 @@
 
 void    setup_socket(t_ping *ping)
 {
-    if ((ping->sockfd = socket(ping->mode == IPV4_MODE ? PF_INET : PF_INET6,
-                            SOCK_RAW, IPPROTO_ICMP)) == -1)
-    {
-        dprintf(STDERR_FILENO, "ft_ping: socket(): %s\n", strerror(errno));
-        exit_routine(ping, FAILURE);
-    }
-
     if (ping->mode == IPV4_MODE)
     {
+        if ((ping->sockfd = socket(PF_INET, SOCK_RAW, IPPROTO_ICMP)) == -1)
+        {
+            dprintf(STDERR_FILENO, "ft_ping: socket(): %s\n", strerror(errno));
+            exit_routine(ping, FAILURE);
+        }
+        if (setsockopt(ping->sockfd, IPPROTO_IP, IP_HDRINCL,
+            &ping->conf.custom_iphdr, sizeof(ping->conf.custom_iphdr)) != SUCCESS)
+        {
+            dprintf(STDERR_FILENO, "ft_ping: setsockopt(): %s\n", strerror(errno));
+            exit_routine(ping, FAILURE);
+        }
         if (setsockopt(ping->sockfd, IPPROTO_IP, IP_TTL,
             &ping->conf.ttl, sizeof(ping->conf.ttl)) != SUCCESS)
         {
@@ -30,28 +34,27 @@ void    setup_socket(t_ping *ping)
             exit_routine(ping, FAILURE);
         }
     }
-
-    if (ping->mode == IPV4_MODE)
-    {
-        if (setsockopt(ping->sockfd, IPPROTO_IP, IP_HDRINCL,
-            &ping->conf.custom_iphdr, sizeof(ping->conf.custom_iphdr)) != SUCCESS)
-        {
-            dprintf(STDERR_FILENO, "ft_ping: setsockopt(): %s\n", strerror(errno));
-            exit_routine(ping, FAILURE);
-        }
-    }
     else
     {
+        if ((ping->sockfd = socket(PF_INET6, SOCK_RAW, IPPROTO_ICMPV6)) == -1)
+        {
+            dprintf(STDERR_FILENO, "ft_ping: socket(): %s\n", strerror(errno));
+            exit_routine(ping, FAILURE);
+        }
         if (setsockopt(ping->sockfd, IPPROTO_IPV6, IPV6_HDRINCL,
             &ping->conf.custom_iphdr, sizeof(ping->conf.custom_iphdr)) != SUCCESS)
         {
             dprintf(STDERR_FILENO, "ft_ping: setsockopt(): %s\n", strerror(errno));
             exit_routine(ping, FAILURE);
         }
+        // int optval = 1;
+        // if (setsockopt(ping->sockfd, IPPROTO_IPV6, IPV6_HOPLIMIT, &optval, sizeof(optval)) == -1)
+        // {
+        //     dprintf(STDERR_FILENO, "ft_ping: setsockopt(): %s\n", strerror(errno));
+        //     exit_routine(ping, FAILURE);
+        // }
 
     }
-
-
     if (ping->opts & D_OPT)
     {
         ping->conf.so_debug = 1;

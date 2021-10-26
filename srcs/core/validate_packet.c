@@ -63,37 +63,55 @@ static t_lst    *check_packet(
         if (check_timeval(payload, packet) != SUCCESS)
             return (NULL);
     }
-
     return (packet);
+}
+
+uint8_t         check_icmp_sequence(t_ping *ping, void *icmp_area, uint16_t *sequence)
+{
+    if (ping->mode == IPV4_MODE)
+    {
+        struct icmphdr  *icmphdr    = (struct icmphdr *)(icmp_area);
+
+        *sequence = htons(icmphdr->un.echo.sequence);
+        if (icmphdr->type != ICMP_ECHOREPLY || *sequence > ping->sequence)
+            return (FAILURE);
+    }
+    else if (ping->mode == IPV6_MODE)
+    {
+        struct icmp6_hdr *icmp6_hdr  = (struct icmp6_hdr *)(icmp_area);
+
+        *sequence = htons(icmp6_hdr->icmp6_seq);
+        if (icmp6_hdr->icmp6_type != ICMP6_ECHO_REPLY || *sequence > ping->sequence)
+            return (FAILURE);
+    }
+    return (SUCCESS);
 }
 
 t_packet_data   *validate_packet(
                     t_ping *ping, ssize_t icmp_area_size,
                     struct timeval *time_recv, void *icmp_area)
 {
-    t_lst           *packet       = NULL;
-    t_packet_data   *packet_data  = NULL;
-    struct icmphdr  *response     = (struct icmphdr *)(icmp_area);
-    uint16_t        sequence      = htons(response->un.echo.sequence);
+    t_lst               *packet         = NULL;
+    t_packet_data       *packet_data    = NULL;
+    uint16_t            sequence        = 0;
 
-    if (response->type == ICMP_ECHOREPLY && sequence <= ping->sequence)
+    if (check_icmp_sequence(ping, icmp_area, &sequence) != SUCCESS)
+        return (NULL);
+    if (!(packet = check_packet(ping, (char *)icmp_area + ICMPHDR_SIZE,
+                        icmp_area_size - ICMPHDR_SIZE,
+                        sequence)))
+        return (NULL);
+    else
     {
-        if (!(packet = check_packet(ping, (char *)icmp_area + ICMPHDR_SIZE,
-                            icmp_area_size - ICMPHDR_SIZE,
-                            htons(response->un.echo.sequence))))
-            return (NULL);
-        else
-        {
-            if (ping->pipe < (ping->sequence - sequence))
-                ping->pipe = ping->sequence - sequence;
-            packet_data = (t_packet_data *)packet->content;
-            ft_memcpy(&packet_data->time_recv, time_recv,
-                sizeof(struct timeval));
-            packet_data->sequence = sequence;
-            packet_data->status |= PACKET_RECEIVED;
-            ping->received++;
-            return (packet_data);
-        }
+        if (ping->pipe < (ping->sequence - sequence))
+            ping->pipe = ping->sequence - sequence;
+        packet_data = (t_packet_data *)packet->content;
+        ft_memcpy(&packet_data->time_recv, time_recv,
+            sizeof(struct timeval));
+        packet_data->sequence = sequence;
+        packet_data->status |= PACKET_RECEIVED;
+        ping->received++;
+        return (packet_data);
     }
 
     return (NULL);

@@ -32,7 +32,7 @@ static void             display_icmp_error(
     }
 }
 
-static uint8_t owned_packet(t_ping *ping, void *icmp_area)
+static uint8_t owned_packet_v4(t_ping *ping, void *icmp_area)
 {
     struct icmphdr  *response     = (struct icmphdr *)(icmp_area);
     uint16_t        id            = htons(response->un.echo.id);
@@ -40,19 +40,42 @@ static uint8_t owned_packet(t_ping *ping, void *icmp_area)
     return (id == 0 || id == ping->conf.pid ? TRUE : FALSE);
 }
 
+static uint8_t owned_packet_v6(t_ping *ping, void *icmp_area)
+{
+    struct icmp6_hdr *response     = (struct icmp6_hdr *)(icmp_area);
+    uint16_t          id            = htons(response->icmp6_id);
+
+    return (id == ping->conf.pid ? TRUE : FALSE);
+}
+
+static uint8_t owned_packet_handler(t_ping *ping, void *buffer)
+{
+    if (ping->mode == IPV4_MODE)
+        return (owned_packet_v4(ping, buffer + IPHDR_SIZE));
+    else
+        return (owned_packet_v6(ping, buffer));
+}
+
 static t_packet_data    *process_packet(
                             t_ping *ping, char *buffer, ssize_t *bytes_recv,
                             struct timeval *time_recv)
 {
     uint16_t        discard_time_recv   = 0;
+    ssize_t         icmp_area_size      = *bytes_recv;
+    void            *icmp_area          = buffer;
     t_packet_data   *packet_data        = NULL;
 
     if (*bytes_recv != -1)
     {
         ft_memcpy(&ping->end, time_recv, TIMEVAL_SIZE);
-        if (owned_packet(ping, ping->mode == IPV4_MODE ? buffer + IPHDR_SIZE : buffer + IPV6HDR_SIZE) == TRUE)
+        if (owned_packet_handler(ping, buffer) == TRUE)
         {
-            if (!(packet_data = validate_packet(ping, *bytes_recv - IPHDR_SIZE, time_recv, buffer + IPHDR_SIZE)))
+            if (ping->mode == IPV4_MODE)
+            {
+                icmp_area_size -= IPHDR_SIZE;
+                icmp_area += IPHDR_SIZE;
+            }
+            if (!(packet_data = validate_packet(ping, icmp_area_size, time_recv, icmp_area)))
             {
                 display_icmp_error(ping, buffer, buffer + IPHDR_SIZE,
                     ping->sequence);
