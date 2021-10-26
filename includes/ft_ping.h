@@ -122,12 +122,18 @@ typedef struct                  s_ping_ewma
     double                      ewma;
 }                               t_ping_ewma;
 
+typedef struct                  s_ancillary_data
+{
+    uint8_t                     ttl;
+}                               t_ancillary_data;
+
 
 typedef struct                  s_packet_data
 {
     uint16_t                    sequence;
     uint8_t                     status;
     char                        _PADDING(5);
+    t_ancillary_data            ancillary_data;
     struct timeval              time_sent;
     struct timeval              time_recv;
 }                               t_packet_data;
@@ -203,6 +209,7 @@ void                            display_unowned(t_ping *ping, void *buffer, ssiz
 void                            getnameinfo_error_handler(t_ping *ping, int status);
 uint8_t                         inet_pton_handler(t_ping *ping, char *target);
 void                            getnameinfo_handler(t_ping *ping);
+void                            *find_ancillary_data(struct msghdr *msghdr, int cmsg_type);
 
 
 /* DEBUG */

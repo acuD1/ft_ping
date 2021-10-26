@@ -16,31 +16,38 @@ void     display_recv(
                     t_ping *ping, void *buffer, t_packet_data *packet_data,
                     ssize_t *bytes_received)
 {
-    struct iphdr *iphdr     = (struct iphdr *)buffer;
-    double latency          = 0;
+    uint8_t         ttl         = 0;
+    ssize_t         bytes       = 0;
+    double          latency     = 0;
 
     if (ping->opts & DD_OPT)
         dprintf(STDOUT_FILENO, "[%ld.%ld] ",
             packet_data->time_recv.tv_sec, packet_data->time_recv.tv_usec);
     if (ping->mode == IPV4_MODE)
+    {
         inet_ntop_handler(ping, (uint32_t *)&((struct sockaddr_in *)&ping->target)->sin_addr);
+        ttl = ((struct iphdr *)buffer)->ttl;
+        bytes = *bytes_received - IPHDR_SIZE;
+    }
     else
+    {
         inet_ntop_handler(ping, (uint32_t *)&((struct sockaddr_in6 *)&ping->target)->sin6_addr);
+        ttl = packet_data->ancillary_data.ttl;
+        bytes = *bytes_received;
+    }
 
     if (ping->conf.dns && (ping->opts & N_OPT) == 0)
     {
-        dprintf(STDOUT_FILENO, "%zd bytes from %s (%s): icmp->seq=%hu ttl=%hhu",
-            *bytes_received - IPHDR_SIZE, ping->buff_dns, ping->buff_ip,
-            packet_data->sequence, iphdr->ttl);
+        dprintf(STDOUT_FILENO, "%zd bytes from %s (%s): icmp_seq=%hu ttl=%hhu",
+           bytes, ping->buff_dns, ping->buff_ip,
+            packet_data->sequence, ttl);
     }
     else
     {
-        dprintf(STDOUT_FILENO, "%zd bytes from %s: icmp->seq=%hu ttl=%hhu",
-            *bytes_received - IPHDR_SIZE, ping->buff_ip,
-            packet_data->sequence, iphdr->ttl);
+        dprintf(STDOUT_FILENO, "%zd bytes from %s: icmp_seq=%hu ttl=%hhu",
+            bytes, ping->buff_ip,
+            packet_data->sequence, ttl);
     }
-
-
 
     if (ping->conf.payload_size >= TIMEVAL_SIZE)
     {

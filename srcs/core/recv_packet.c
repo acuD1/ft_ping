@@ -94,17 +94,22 @@ static t_packet_data    *process_packet(
     return (NULL);
 }
 
+
+
 t_packet_data           *recv_packet(
                             t_ping *ping, char *buffer,
                             ssize_t *bytes_recv, struct timeval *time_recv)
 {
+    t_packet_data           *packet_data = NULL;
     struct sockaddr_storage tmp;
     struct msghdr           msghdr;
     struct iovec            msg_iov[1];
+    uint8_t                 ancillary[64];
 
     ft_memset(&msghdr, 0, sizeof(msghdr));
     ft_memset(&tmp, 0, sizeof(struct sockaddr_storage));
     ft_memset(msg_iov, 0, sizeof(msg_iov));
+    ft_memset(ancillary, 0, sizeof(ancillary));
 
     msg_iov->iov_base   = buffer;
     msg_iov->iov_len    = sizeof(char) * MAX_MTU;
@@ -125,8 +130,20 @@ t_packet_data           *recv_packet(
     msghdr.msg_iovlen   = 1;
     msghdr.msg_flags    = 0;
 
+    if (ping->mode == IPV6_MODE)
+    {
+        msghdr.msg_control = ancillary;
+        msghdr.msg_controllen = sizeof(ancillary);
+    }
+
     *bytes_recv = recvmsg(ping->sockfd, &msghdr, MSG_DONTWAIT);
 
-    return (process_packet(ping, buffer, bytes_recv, time_recv));
+
+    packet_data = process_packet(ping, buffer, bytes_recv, time_recv);
+
+    if (ping->mode == IPV6_MODE && packet_data)
+        packet_data->ancillary_data.ttl = *(int *)find_ancillary_data(&msghdr, IPV6_HOPLIMIT);
+
+    return (packet_data);
 
 }

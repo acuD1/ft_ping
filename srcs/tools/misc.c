@@ -12,7 +12,7 @@
 
 #include "ft_ping.h"
 
-char    *inet_ntop_handler(t_ping *ping, uint32_t *addr)
+char        *inet_ntop_handler(t_ping *ping, uint32_t *addr)
 {
     ft_memset(&ping->buff_ip, 0, sizeof(ping->buff_ip));
     if (!(inet_ntop(ping->mode == IPV4_MODE ? AF_INET : AF_INET6, addr, ping->buff_ip, sizeof(ping->buff_ip))))
@@ -24,7 +24,7 @@ char    *inet_ntop_handler(t_ping *ping, uint32_t *addr)
     return (ping->buff_ip);
 }
 
-uint8_t    inet_pton_handler(t_ping *ping, char *target)
+uint8_t     inet_pton_handler(t_ping *ping, char *target)
 {
     u_char  buff[sizeof(struct in6_addr)];
     ft_memset(&buff, 0, sizeof(struct in6_addr));
@@ -34,7 +34,7 @@ uint8_t    inet_pton_handler(t_ping *ping, char *target)
     return (TRUE);
 }
 
-void      getnameinfo_handler(t_ping *ping)
+void        getnameinfo_handler(t_ping *ping)
 {
     int     status = 0;
     struct sockaddr_in6 sa6 = *(struct sockaddr_in6 *)&ping->target;
@@ -50,7 +50,7 @@ void      getnameinfo_handler(t_ping *ping)
     ping->conf.dns = TRUE;
 }
 
-uint16_t in_cksum(void *buffer, size_t len)
+uint16_t    in_cksum(void *buffer, size_t len)
 {
     uint16_t *tmp   = (uint16_t *)buffer;
     uint32_t sum    = 0;
@@ -68,4 +68,17 @@ uint16_t in_cksum(void *buffer, size_t len)
         sum = (sum & 0xFFFF) + (sum >> 16);
 
     return ((uint16_t)~sum);
+}
+
+void        *find_ancillary_data(struct msghdr *msghdr, int cmsg_type)
+{
+    struct cmsghdr *cmsg = NULL;
+
+    for (cmsg = CMSG_FIRSTHDR(msghdr); cmsg != NULL; cmsg = CMSG_NXTHDR(msghdr, cmsg))
+    {
+        if ((cmsg->cmsg_level == IPPROTO_IPV6) && (cmsg->cmsg_type == cmsg_type)) {
+            return (CMSG_DATA(cmsg));
+        }
+    }
+    return (NULL);
 }
