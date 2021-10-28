@@ -12,25 +12,68 @@
 
 #include "ft_ping.h"
 
+void icmp6_error_handler(uint8_t type, uint8_t code, uint16_t sequence, char *source)
+{
+    (void)type;
+    (void)code;
+    (void)sequence;
+    (void)source;
+    dprintf(2, "ICMP6 Error: %s\n", source);
+}
+
 static void             display_icmp_error(
                             t_ping *ping, void *buffer, void *icmp_area,
                             uint16_t sequence)
 {
-    struct iphdr    *iphdr     = (struct iphdr *)buffer;
-    struct icmphdr  *icmphdr   = (struct icmphdr *)icmp_area;
+    static uint16_t last_seq   = 0;
 
-    inet_ntop_handler(ping, &iphdr->saddr);
-
-    if (icmphdr->type != ICMP_ECHO)
+    switch (ping->mode)
     {
-        ping->errors++;
-        if (ping->opts & F_OPT)
-            dprintf(STDERR_FILENO, "E");
-        else
-            icmp_error_handler(icmphdr->type, icmphdr->code, sequence,
-                ping->buff_ip);
+        case IPV4_MODE:
+        {
+            struct iphdr    *iphdr     = (struct iphdr *)buffer;
+            struct icmphdr  *icmphdr   = (struct icmphdr *)icmp_area;
+
+            if (icmphdr->type != ICMP_ECHO && last_seq != sequence)
+            {
+                inet_ntop_handler(ping, &iphdr->saddr);
+                last_seq = sequence;
+                ping->errors++;
+                if (ping->opts & F_OPT)
+                    dprintf(STDERR_FILENO, "E");
+                else
+                    icmp_error_handler(icmphdr->type, icmphdr->code, sequence,
+                        ping->buff_ip);
+            }
+            break;
+        }
+
+        case IPV6_MODE:
+        {
+            struct ip6_hdr  *ip6_hdr    = (struct ip6_hdr *)buffer;
+            struct icmp6_hdr *icmp6_hdr  = (struct icmp6_hdr *)icmp_area;
+
+            if (icmp6_hdr->icmp6_type != ICMP6_ECHO_REQUEST &&
+                last_seq != sequence)
+            {
+                inet_ntop_handler(ping, (uint32_t *)&ip6_hdr->ip6_src);
+                last_seq = sequence;
+                ping->errors++;
+                if (ping->opts & F_OPT)
+                    dprintf(STDERR_FILENO, "E");
+                else
+                    icmp6_error_handler(icmp6_hdr->icmp6_type, icmp6_hdr->icmp6_code, sequence,
+                        ping->buff_ip);
+            }
+            break;
+        }
+
+        default:
+            break;
     }
 }
+
+
 
 static uint8_t owned_packet_v4(t_ping *ping, void *icmp_area)
 {
@@ -77,8 +120,7 @@ static t_packet_data    *process_packet(
             }
             if (!(packet_data = validate_packet(ping, icmp_area_size, time_recv, icmp_area)))
             {
-                display_icmp_error(ping, buffer, buffer + IPHDR_SIZE,
-                    ping->sequence);
+                display_icmp_error(ping, buffer, icmp_area, ping->sequence);
                 return (NULL);
             }
             return (packet_data);
@@ -138,11 +180,15 @@ t_packet_data           *recv_packet(
 
     *bytes_recv = recvmsg(ping->sockfd, &msghdr, MSG_DONTWAIT);
 
-
     packet_data = process_packet(ping, buffer, bytes_recv, time_recv);
 
     if (ping->mode == IPV6_MODE && packet_data)
+    {
         packet_data->ancillary_data.ttl = *(int *)find_ancillary_data(&msghdr, IPV6_HOPLIMIT);
+        if (ping->conf.local == FALSE)
+            inet_ntop(AF_INET6, &((struct sockaddr_in6 *)&tmp)->sin6_addr, ping->buff_ip, INET6_ADDRSTRLEN);
+    }
+
 
     return (packet_data);
 

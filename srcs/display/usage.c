@@ -39,10 +39,10 @@ void     print_unallowed_opt(t_opts_args *opts_args)
 
 void    print_init_handler(t_ping *ping)
 {
-    if (ping->mode == IPV4_MODE)
-        inet_ntop_handler(ping, (uint32_t *)&((struct sockaddr_in *)&ping->target)->sin_addr);
-    else
-        inet_ntop_handler(ping, (uint32_t *)&((struct sockaddr_in6 *)&ping->target)->sin6_addr);
+    // if (ping->mode == IPV4_MODE)
+    //     inet_ntop_handler(ping, (uint32_t *)&((struct sockaddr_in *)&ping->target)->sin_addr);
+    // else
+    //     inet_ntop_handler(ping, (uint32_t *)&((struct sockaddr_in6 *)&ping->target)->sin6_addr);
 
     if (ping->conf.diff_dns)
     {
@@ -50,7 +50,7 @@ void    print_init_handler(t_ping *ping)
     }
     else
     {
-        dprintf(STDOUT_FILENO, "PING %s (%s) ", ping->conf.dns ? ping->buff_dns : ping->buff_ip, ping->buff_ip);
+        dprintf(STDOUT_FILENO, "PING %s (%s) ", ping->buff_target, ft_strlen(ping->buff_ip) ? ping->buff_ip : ping->buff_target);
     }
 
     if (ping->mode == IPV4_MODE)

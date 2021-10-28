@@ -78,8 +78,8 @@
 # define PACKET_RECEIVED        0x0001
 # define PACKET_PENDING         0x0002
 
-# define IPV4_MODE              0x0001
-# define IPV6_MODE              0x0002
+# define IPV4_MODE              2
+# define IPV6_MODE              10
 
 typedef struct                  s_conf
 {
@@ -94,6 +94,7 @@ typedef struct                  s_conf
     uint8_t                     ttl;
     uint8_t                     dns;
     uint8_t                     diff_dns;
+    uint8_t                     local;
     char                        _PADDING(3);
 }                               t_conf;
 

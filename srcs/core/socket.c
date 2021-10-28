@@ -54,6 +54,12 @@ void    setup_socket(t_ping *ping)
             dprintf(STDERR_FILENO, "ft_ping: setsockopt(): %s\n", strerror(errno));
             exit_routine(ping, FAILURE);
         }
+        if (setsockopt(ping->sockfd, IPPROTO_IPV6, IPV6_RECVPKTINFO,
+            &test, sizeof(test)) != SUCCESS)
+        {
+            dprintf(STDERR_FILENO, "ft_ping: setsockopt(): %s\n", strerror(errno));
+            exit_routine(ping, FAILURE);
+        }
 
         // int optval = 1;
         // if (setsockopt(ping->sockfd, IPPROTO_IPV6, IPV6_HOPLIMIT, &optval, sizeof(optval)) == -1)

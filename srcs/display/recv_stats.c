@@ -25,13 +25,17 @@ void     display_recv(
             packet_data->time_recv.tv_sec, packet_data->time_recv.tv_usec);
     if (ping->mode == IPV4_MODE)
     {
-        inet_ntop_handler(ping, (uint32_t *)&((struct sockaddr_in *)&ping->target)->sin_addr);
         ttl = ((struct iphdr *)buffer)->ttl;
         bytes = *bytes_received - IPHDR_SIZE;
+        if (ping->conf.local == FALSE)
+        {
+            struct iphdr *ip = (struct iphdr *)buffer;
+            ft_memset(ping->buff_ip, 0, sizeof(ping->buff_ip));
+            inet_ntop(AF_INET, &ip->saddr, ping->buff_ip, INET_ADDRSTRLEN);
+        }
     }
     else
     {
-        inet_ntop_handler(ping, (uint32_t *)&((struct sockaddr_in6 *)&ping->target)->sin6_addr);
         ttl = packet_data->ancillary_data.ttl;
         bytes = *bytes_received;
     }
@@ -73,7 +77,7 @@ void     display_stats(t_ping *ping, t_ping_rtt *ping_rtt, t_ping_ewma *ping_ewm
 {
     if (ping->conf.count == 0)
         dprintf(STDOUT_FILENO, "\n");
-    dprintf(STDOUT_FILENO, "--- %s ping statistics ---\n", ping->conf.diff_dns ? ping->buff_target : ping->conf.dns ? ping->buff_dns : ping->buff_ip);
+    dprintf(STDOUT_FILENO, "--- %s ping statistics ---\n", ping->buff_target);
     dprintf(STDOUT_FILENO, "%hu packets transmitted, %hu received, ",
         ping->sequence, ping->received);
     if (ping->errors)

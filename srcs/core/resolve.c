@@ -12,6 +12,56 @@
 
 #include "ft_ping.h"
 
+void    resolve_local(t_ping *ping)
+{
+    struct ifaddrs  *ifap       = NULL;
+    void            *in_addr    = NULL;
+
+    if (getifaddrs(&ifap) == -1)
+    {
+        dprintf(STDERR_FILENO, "ft_ping: getifaddrs(): %s\n", strerror(errno));
+        exit_routine(ping, FAILURE);
+    }
+    for (struct ifaddrs *ifa = ifap; ifa; ifa = ifa->ifa_next)
+    {
+        if (ifa->ifa_addr == NULL)
+            continue;
+        if (!(ifa->ifa_flags & IFF_UP))
+            continue;
+        if (ifa->ifa_addr->sa_family == ping->mode)
+        {
+            switch (ifa->ifa_addr->sa_family)
+            {
+                case AF_INET:
+                {
+                    struct sockaddr_in *s4 = (struct sockaddr_in *)ifa->ifa_addr;
+                    if (s4->sin_addr.s_addr == htonl(INADDR_LOOPBACK))
+                    {
+                        in_addr = &s4->sin_addr;
+                        break;
+                    }
+                }
+                case AF_INET6:
+                {
+                    struct sockaddr_in6 *s6 = (struct sockaddr_in6 *)ifa->ifa_addr;
+                    if (IN6_IS_ADDR_LOOPBACK(&s6->sin6_addr))
+                    {
+                        in_addr = &s6->sin6_addr;
+                        break;
+                    }
+                }
+                default:
+                    continue;
+            }
+        }
+    }
+    if (!inet_ntop(ping->mode, in_addr, ping->buff_ip, sizeof(ping->buff_ip)))
+    {
+        dprintf(STDERR_FILENO, "ft_ping: inet_ntop(): %s\n", strerror(errno));
+        exit_routine(ping, FAILURE);
+    }
+}
+
 uint8_t resolve_target(t_ping *ping, char *target)
 {
     struct  addrinfo    hints;
@@ -38,7 +88,7 @@ uint8_t resolve_target(t_ping *ping, char *target)
 
     for (struct addrinfo *tmp = res; tmp != NULL; tmp = tmp->ai_next)
     {
-        if (tmp->ai_family == PF_INET6)
+        if (tmp->ai_family == AF_INET6)
         {
             ping->mode |= IPV6_MODE;
             ((struct sockaddr_in6 *)&ping->target)->sin6_addr
@@ -51,14 +101,11 @@ uint8_t resolve_target(t_ping *ping, char *target)
             {
                 getnameinfo_handler(ping);
                 if (ft_strequ(target, ping->buff_dns) == FALSE)
-                {
-                    ft_strcpy(ping->buff_target, target);
                     ping->conf.diff_dns = TRUE;
-                }
             }
             break ;
         }
-        if (tmp->ai_family == PF_INET)
+        if (tmp->ai_family == AF_INET)
         {
             ping->mode |= IPV4_MODE;
             ((struct sockaddr_in *)&ping->target)->sin_addr.s_addr
@@ -71,14 +118,13 @@ uint8_t resolve_target(t_ping *ping, char *target)
             {
                 getnameinfo_handler(ping);
                 if (ft_strequ(target, ping->buff_dns) == FALSE)
-                {
-                    ft_strcpy(ping->buff_target, target);
                     ping->conf.diff_dns = TRUE;
-                }
             }
             break ;
         }
     }
+
+    ft_strcpy(ping->buff_target, target);
 
     ping->packet_size = ping->conf.payload_size;
     ping->packet_size += ping->mode == IPV4_MODE ? IPHDR_SIZE : IPV6HDR_SIZE;
@@ -90,6 +136,17 @@ uint8_t resolve_target(t_ping *ping, char *target)
         tmp = res->ai_next;
         ft_memdel((void **)&res);
     }
+
+    if ((ping->mode == IPV4_MODE && *((uint32_t *)&((struct sockaddr_in *)&ping->target)->sin_addr) == 0)
+        || (ping->mode == IPV6_MODE && *((uint32_t *)&((struct sockaddr_in6 *)&ping->target)->sin6_addr) == 0))
+    {
+        resolve_local(ping);
+        if (inet_pton_handler(ping, target) != TRUE)
+            ping->conf.diff_dns = TRUE;
+        ping->conf.local = TRUE;
+    }
+
+    dprintf(STDERR_FILENO, "[DEBUG] TARGET\t|%s|\n[DEBUG] DNS\t|%s|\n[DEBUG] IP\t|%s|\n", ping->buff_target, ping->buff_dns, ping->buff_ip);
 
     return (SUCCESS);
 }

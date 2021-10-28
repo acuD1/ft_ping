@@ -186,11 +186,11 @@ void    send_packet(t_ping *ping, struct timeval *current)
                 sizeof(struct sockaddr_in6));
     }
 
-    if (bytes_sent == -1)
-    {
-        printf("Ping error\n");
-        ping->errors++;
-    }
+    // if (bytes_sent == -1)
+    // {
+    //     // printf("Ping error\n");
+    //     ping->errors++;
+    // }
     if (!(ft_lstappend(&ping->packets,
             ft_lstnew(&packet_data, sizeof(t_packet_data)))))
         exit_routine(ping, FAILURE);
