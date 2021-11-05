@@ -61,8 +61,10 @@ static void resolve_local(t_ping *ping)
     if (!inet_ntop(ping->mode, in_addr, ping->buff_ip, sizeof(ping->buff_ip)))
     {
         dprintf(STDERR_FILENO, "ft_ping: inet_ntop(): %s\n", strerror(errno));
+        freeifaddrs(ifap);
         exit_routine(ping, FAILURE);
     }
+    freeifaddrs(ifap);
 }
 
 uint8_t     resolve_target(t_ping *ping, char *target)

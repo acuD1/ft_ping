@@ -41,6 +41,8 @@ uint8_t         exec_ping(t_ping *ping)
         }
         if (g_ping & SEND_PACKET && (ping->opts & F_OPT) == 0)
         {
+            if (ping->opts & C_OPT)
+                gettimeofday_handler(ping, &last_send);
             send_packet(ping, &current);
             if (ping->opts & I_OPT)
             {
@@ -72,7 +74,27 @@ uint8_t         exec_ping(t_ping *ping)
             dprintf(STDOUT_FILENO, ".");
         }
         ft_memset(&buffer, 0, sizeof(buffer));
-        if (!(packet_data = recv_packet(ping, buffer, &bytes_recv, &current)))
+        if (ping->opts & C_OPT && ping->conf.count == 0)
+        {
+            struct timeval  timeout;
+            while (1)
+            {
+                ft_memset(&res, 0, sizeof(struct timeval));
+                ft_memset(&timeout, 0, sizeof(struct timeval));
+                gettimeofday_handler(ping, &timeout);
+                timersub(&timeout, &last_send, &res);
+                if ((double)res.tv_sec > 1.0)
+                    break;
+                if (!(packet_data = recv_packet(ping, buffer, &bytes_recv, &timeout)))
+                    continue ;
+                else
+                {
+                    display_recv(ping, buffer, packet_data, &bytes_recv);
+                    break;
+                }
+            }
+        }
+        else if (!(packet_data = recv_packet(ping, buffer, &bytes_recv, &current)))
         {
             if (ping->opts & F_OPT)
             {
