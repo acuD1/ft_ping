@@ -22,7 +22,7 @@ uint8_t         set_opts_args(t_ping *ping, int argc, char **argv)
 {
     t_opts_conf     opts_conf;
     t_opts_args     opts_args;
-    t_opt_set_db    *tmp   = NULL;
+    t_opt_set_db    *tmp        = NULL;
 
     ft_memset(&opts_conf, 0, sizeof(t_opts_conf));
     ft_memset(&opts_args, 0, sizeof(t_opts_args));
@@ -38,18 +38,29 @@ uint8_t         set_opts_args(t_ping *ping, int argc, char **argv)
     }
     if (ft_get_opts_args(&opts_args, &opts_conf, argc, argv) != SUCCESS)
         return (set_opts_args_failure(&opts_args));
+
+    // Unallowed options handler
     if (opts_args.all & UNALLOWED_OPT)
     {
         print_unallowed_opt(&opts_args);
         print_usage();
         return (set_opts_args_failure(&opts_args));
     }
+
+    // HELP option
     if (opts_args.all & H_OPT)
     {
-        print_version();
         print_usage();
+        return (SUCCESS);
+    }
+
+    if (opts_args.all & VV_OPT)
+    {
+        print_version();
         return (set_opts_args_failure(&opts_args));
     }
+
+    // COUNT option
     if ((tmp = get_opt_set_db(&opts_args.opt_set, "c")) != NULL)
     {
         if (tmp->arg)

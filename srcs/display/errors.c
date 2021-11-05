@@ -163,8 +163,11 @@ void    getnameinfo_error_handler(t_ping *ping, int status)
             error = "Out of memory.";
             break ;
         case EAI_SYSTEM:
-            error = strerror(errno);
+            error = "System error";
             break ;
+        default:
+            error = "Unknown error";
+            break;
     }
     dprintf(STDERR_FILENO, "ft_ping: getnameinfo(): %s\n", error);
     exit_routine(ping, FAILURE);

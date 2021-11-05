@@ -12,7 +12,7 @@
 
 #include "ft_ping.h"
 
-void icmp6_error_handler(uint8_t type, uint8_t code, uint16_t sequence, char *source)
+static void icmp6_error_handler(uint8_t type, uint8_t code, uint16_t sequence, char *source)
 {
     (void)type;
     (void)code;
@@ -94,7 +94,7 @@ static uint8_t owned_packet_v6(t_ping *ping, void *icmp_area)
 static uint8_t owned_packet_handler(t_ping *ping, void *buffer)
 {
     if (ping->mode == IPV4_MODE)
-        return (owned_packet_v4(ping, buffer + IPHDR_SIZE));
+        return (owned_packet_v4(ping, (char *)buffer + IPHDR_SIZE));
     else
         return (owned_packet_v6(ping, buffer));
 }
@@ -105,7 +105,7 @@ static t_packet_data    *process_packet(
 {
     uint16_t        discard_time_recv   = 0;
     ssize_t         icmp_area_size      = *bytes_recv;
-    void            *icmp_area          = buffer;
+    char            *icmp_area          = (char *)buffer;
     t_packet_data   *packet_data        = NULL;
 
     if (*bytes_recv != -1)
@@ -184,7 +184,7 @@ t_packet_data           *recv_packet(
 
     if (ping->mode == IPV6_MODE && packet_data)
     {
-        packet_data->ancillary_data.ttl = *(int *)find_ancillary_data(&msghdr, IPV6_HOPLIMIT);
+        packet_data->ancillary_data.ttl = *(uint8_t *)find_ancillary_data(&msghdr, IPV6_HOPLIMIT);
         if (ping->conf.local == FALSE)
             inet_ntop(AF_INET6, &((struct sockaddr_in6 *)&tmp)->sin6_addr, ping->buff_ip, INET6_ADDRSTRLEN);
     }

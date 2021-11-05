@@ -26,7 +26,6 @@ void    init_ping(t_ping *ping)
 
     signal(SIGINT, sig_handler);
     signal(SIGALRM, sig_handler);
-    signal(SIGVTALRM, sig_handler);
 
     g_ping |= SEND_PACKET;
 }

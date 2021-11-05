@@ -45,7 +45,10 @@ void        getnameinfo_handler(t_ping *ping)
                     ping->mode == IPV4_MODE ? (struct sockaddr *)&sa : (struct sockaddr *)&sa6,
                     ping->mode == IPV4_MODE ? sizeof(sa) : sizeof(sa6), ping->buff_dns,
                     sizeof(ping->buff_dns), NULL, 0, NI_NAMEREQD)) != 0)
-                getnameinfo_error_handler(ping, status);
+    {
+        if (status != EAI_NONAME)
+            getnameinfo_error_handler(ping, status);
+    }
     inet_ntop_handler(ping, ping->mode == IPV4_MODE ? (uint32_t *)&sa.sin_addr : (uint32_t * )&sa6.sin6_addr);
     ping->conf.dns = TRUE;
 }

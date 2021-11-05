@@ -105,7 +105,7 @@ static void     setup_icmphdr(t_ping *ping, void *packet)
     icmphdr->checksum           = in_cksum(packet, ping->packet_size - IPHDR_SIZE);
 }
 
-void        set_buff_ip6_hdr(char *buff_checksum, struct ip6_hdr *ip6_hdr)
+static void        set_buff_ip6_hdr(char *buff_checksum, struct ip6_hdr *ip6_hdr)
 {
     ft_memcpy(buff_checksum, &ip6_hdr->ip6_src, 16);
     ft_memcpy(buff_checksum + 16, &ip6_hdr->ip6_dst, 16);
@@ -113,7 +113,7 @@ void        set_buff_ip6_hdr(char *buff_checksum, struct ip6_hdr *ip6_hdr)
     ft_memcpy(buff_checksum + 39, &ip6_hdr->ip6_ctlun.ip6_un1.ip6_un1_nxt, 1);
 }
 
-void        set_buff_icmp6_hdr(char *buff_checksum, struct icmp6_hdr *icmp6_hdr)
+static void        set_buff_icmp6_hdr(char *buff_checksum, struct icmp6_hdr *icmp6_hdr)
 {
     ft_memcpy(buff_checksum, &icmp6_hdr->icmp6_type, 1);
     ft_memcpy(buff_checksum + 1, &icmp6_hdr->icmp6_code, 1);
@@ -121,12 +121,12 @@ void        set_buff_icmp6_hdr(char *buff_checksum, struct icmp6_hdr *icmp6_hdr)
     ft_memcpy(buff_checksum + 4, &icmp6_hdr->icmp6_seq, 2);
 }
 
-void        set_buff_icmp6_data(char *buff_checksum, uint8_t *data, size_t size)
+static void        set_buff_icmp6_data(char *buff_checksum, uint8_t *data, size_t size)
 {
     ft_memcpy(buff_checksum, data, size);
 }
 
-uint16_t    icmp6_checksum(t_ping *ping, void *packet)
+static uint16_t    icmp6_checksum(t_ping *ping, void *packet)
 {
     char    buff_checksum[104];
 
@@ -134,8 +134,8 @@ uint16_t    icmp6_checksum(t_ping *ping, void *packet)
     ft_memset(buff_checksum, 0, 104);
 
     set_buff_ip6_hdr(buff_checksum, (struct ip6_hdr *)packet);
-    set_buff_icmp6_hdr(buff_checksum + 40, (struct icmp6_hdr *)(packet + 40));
-    set_buff_icmp6_data(buff_checksum + 40 + 8, (uint8_t *)(packet + 40 + ICMPHDR_SIZE),
+    set_buff_icmp6_hdr(buff_checksum + 40, (struct icmp6_hdr *)((char *)packet + 40));
+    set_buff_icmp6_data(buff_checksum + 40 + 8, (uint8_t *)((char *)packet + 40 + ICMPHDR_SIZE),
                         ping->conf.payload_size);
     return (in_cksum(buff_checksum, 40 + 8 + ping->conf.payload_size));
 }

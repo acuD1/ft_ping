@@ -57,7 +57,8 @@
 # define Q_OPT                  1ULL << ('q' - 97)
 # define T_OPT                  1ULL << ('t' - 97)
 # define N_OPT                  1ULL << ('n' - 97)
-# define ALLOWED_OPT            "vhcdsDfilqtn"
+# define VV_OPT                 1ULL << ('V' - 39)
+# define ALLOWED_OPT            "vhcdsDfilqtnV"
 # define ALLOWED_OPT_ARG        "csilt"
 # define ALLOWED_OPT_TAB        NULL
 # define ALLOWED_OPT_TAB_ARG    NULL
@@ -95,7 +96,7 @@ typedef struct                  s_conf
     uint8_t                     dns;
     uint8_t                     diff_dns;
     uint8_t                     local;
-    char                        _PADDING(3);
+    char                        _PADDING(2);
 }                               t_conf;
 
 typedef struct                  s_ping_global
@@ -133,8 +134,8 @@ typedef struct                  s_packet_data
 {
     uint16_t                    sequence;
     uint8_t                     status;
-    char                        _PADDING(5);
     t_ancillary_data            ancillary_data;
+    char                        _PADDING(4);
     struct timeval              time_sent;
     struct timeval              time_recv;
 }                               t_packet_data;

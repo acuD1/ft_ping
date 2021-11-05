@@ -12,7 +12,7 @@
 
 #include "ft_ping.h"
 
-void    resolve_local(t_ping *ping)
+static void resolve_local(t_ping *ping)
 {
     struct ifaddrs  *ifap       = NULL;
     void            *in_addr    = NULL;
@@ -22,6 +22,11 @@ void    resolve_local(t_ping *ping)
         dprintf(STDERR_FILENO, "ft_ping: getifaddrs(): %s\n", strerror(errno));
         exit_routine(ping, FAILURE);
     }
+
+    /**/
+    #pragma clang diagnostic ignored "-Wcast-align"
+    /**/
+
     for (struct ifaddrs *ifa = ifap; ifa; ifa = ifa->ifa_next)
     {
         if (ifa->ifa_addr == NULL)
@@ -34,21 +39,19 @@ void    resolve_local(t_ping *ping)
             {
                 case AF_INET:
                 {
-                    struct sockaddr_in *s4 = (struct sockaddr_in *)ifa->ifa_addr;
+                    struct sockaddr_in *s4
+                        = (struct sockaddr_in *)ifa->ifa_addr;
                     if (s4->sin_addr.s_addr == htonl(INADDR_LOOPBACK))
-                    {
                         in_addr = &s4->sin_addr;
-                        break;
-                    }
+                    break;
                 }
                 case AF_INET6:
                 {
-                    struct sockaddr_in6 *s6 = (struct sockaddr_in6 *)ifa->ifa_addr;
+                    struct sockaddr_in6 *s6
+                        = (struct sockaddr_in6 *)ifa->ifa_addr;
                     if (IN6_IS_ADDR_LOOPBACK(&s6->sin6_addr))
-                    {
                         in_addr = &s6->sin6_addr;
-                        break;
-                    }
+                    break;
                 }
                 default:
                     continue;
@@ -62,7 +65,7 @@ void    resolve_local(t_ping *ping)
     }
 }
 
-uint8_t resolve_target(t_ping *ping, char *target)
+uint8_t     resolve_target(t_ping *ping, char *target)
 {
     struct  addrinfo    hints;
     struct  addrinfo    *res                        = NULL;
@@ -137,8 +140,9 @@ uint8_t resolve_target(t_ping *ping, char *target)
         ft_memdel((void **)&res);
     }
 
-    if ((ping->mode == IPV4_MODE && *((uint32_t *)&((struct sockaddr_in *)&ping->target)->sin_addr) == 0)
-        || (ping->mode == IPV6_MODE && *((uint32_t *)&((struct sockaddr_in6 *)&ping->target)->sin6_addr) == 0))
+    if ((ping->mode == IPV4_MODE
+        && !*((uint32_t *)&((struct sockaddr_in *)&ping->target)->sin_addr))
+        || (ping->mode == IPV6_MODE && !*((uint32_t *)&((struct sockaddr_in6 *)&ping->target)->sin6_addr)))
     {
         resolve_local(ping);
         if (inet_pton_handler(ping, target) != TRUE)

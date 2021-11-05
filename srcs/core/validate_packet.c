@@ -66,7 +66,7 @@ static t_lst    *check_packet(
     return (packet);
 }
 
-uint8_t         check_icmp_sequence(t_ping *ping, void *icmp_area, uint16_t *sequence)
+static uint8_t         check_icmp_sequence(t_ping *ping, void *icmp_area, uint16_t *sequence)
 {
     if (ping->mode == IPV4_MODE)
     {
