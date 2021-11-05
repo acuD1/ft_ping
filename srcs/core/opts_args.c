@@ -65,6 +65,11 @@ uint8_t         set_opts_args(t_ping *ping, int argc, char **argv)
     {
         if (tmp->arg)
         {
+            if (ft_isnum(tmp->arg) != TRUE)
+            {
+                dprintf(STDERR_FILENO, "ft_ping: bad number of packets to transmit.\n");
+                return (set_opts_args_failure(&opts_args));
+            }
             long count = ft_atol(tmp->arg);
             if (count > INT32_MAX || count <= 0)
             {

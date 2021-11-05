@@ -69,7 +69,7 @@ static void     setup_iphdr(t_ping *ping, void *packet)
         ip6_hdr->ip6_ctlun.ip6_un1.ip6_un1_flow = htonl((6 << 28) | (0 << 20) | 0);
         ip6_hdr->ip6_ctlun.ip6_un1.ip6_un1_plen = htons(ping->conf.payload_size + ICMPHDR_SIZE);
         ip6_hdr->ip6_ctlun.ip6_un1.ip6_un1_nxt = IPPROTO_ICMPV6;
-        ip6_hdr->ip6_ctlun.ip6_un1.ip6_un1_hlim = 64;
+        ip6_hdr->ip6_ctlun.ip6_un1.ip6_un1_hlim = ping->conf.ttl;
         ip6_hdr->ip6_src = source.sin6_addr;
         ip6_hdr->ip6_dst = ((struct sockaddr_in6 *)&ping->target)->sin6_addr;
     }

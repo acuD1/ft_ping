@@ -87,10 +87,16 @@ uint8_t         exec_ping(t_ping *ping)
                     break;
                 if (!(packet_data = recv_packet(ping, buffer, &bytes_recv, &timeout)))
                     continue ;
-                else
+                if ((ping->opts & Q_OPT) == 0)
                 {
-                    display_recv(ping, buffer, packet_data, &bytes_recv);
-                    break;
+                    if (ping->opts & F_OPT)
+                    {
+                        dprintf(STDOUT_FILENO, "\b");
+                        g_ping |= SEND_PACKET;
+                    }
+                    else
+                        display_recv(ping, buffer, packet_data, &bytes_recv);
+                    break ;
                 }
             }
         }

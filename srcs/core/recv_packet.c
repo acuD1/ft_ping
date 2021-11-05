@@ -56,6 +56,7 @@ static void             display_icmp_error(
             if (icmp6_hdr->icmp6_type != ICMP6_ECHO_REQUEST &&
                 last_seq != sequence)
             {
+                dprintf(STDERR_FILENO, "???\n");
                 inet_ntop_handler(ping, (uint32_t *)&ip6_hdr->ip6_src);
                 last_seq = sequence;
                 ping->errors++;
@@ -88,7 +89,7 @@ static uint8_t owned_packet_v6(t_ping *ping, void *icmp_area)
     struct icmp6_hdr *response     = (struct icmp6_hdr *)(icmp_area);
     uint16_t          id            = htons(response->icmp6_id);
 
-    return (id == ping->conf.pid ? TRUE : FALSE);
+    return (id == 0 || id == ping->conf.pid ? TRUE : FALSE);
 }
 
 static uint8_t owned_packet_handler(t_ping *ping, void *buffer)
