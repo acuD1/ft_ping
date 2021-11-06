@@ -212,6 +212,8 @@ void                            getnameinfo_error_handler(t_ping *ping, int stat
 uint8_t                         inet_pton_handler(t_ping *ping, char *target);
 void                            getnameinfo_handler(t_ping *ping);
 void                            *find_ancillary_data(struct msghdr *msghdr, int cmsg_type);
+void                            icmp6_error_handler(
+                                    uint8_t type, uint8_t code, uint16_t sequence, char *source);
 
 
 /* DEBUG */

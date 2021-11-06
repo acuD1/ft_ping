@@ -12,15 +12,6 @@
 
 #include "ft_ping.h"
 
-static void icmp6_error_handler(uint8_t type, uint8_t code, uint16_t sequence, char *source)
-{
-    (void)type;
-    (void)code;
-    (void)sequence;
-    (void)source;
-    dprintf(2, "ICMP6 Error: %s\n", source);
-}
-
 static void             display_icmp_error(
                             t_ping *ping, void *buffer, void *icmp_area,
                             uint16_t sequence)
@@ -73,8 +64,6 @@ static void             display_icmp_error(
             break;
     }
 }
-
-
 
 static uint8_t owned_packet_v4(t_ping *ping, void *icmp_area)
 {
@@ -137,8 +126,6 @@ static t_packet_data    *process_packet(
     return (NULL);
 }
 
-
-
 t_packet_data           *recv_packet(
                             t_ping *ping, char *buffer,
                             ssize_t *bytes_recv, struct timeval *time_recv)
@@ -190,7 +177,5 @@ t_packet_data           *recv_packet(
             inet_ntop(AF_INET6, &((struct sockaddr_in6 *)&tmp)->sin6_addr, ping->buff_ip, INET6_ADDRSTRLEN);
     }
 
-
     return (packet_data);
-
 }

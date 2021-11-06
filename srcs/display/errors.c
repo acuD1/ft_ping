@@ -146,6 +146,87 @@ void    icmp_error_handler(
     dprintf(STDERR_FILENO, "\n");
 }
 
+void    icmp6_error_handler(
+            uint8_t type, uint8_t code, uint16_t sequence, char *source)
+{
+    char    *error      = NULL;
+    uint8_t bad_code    = 0;
+
+
+    dprintf(2, "ICMP6 Error: %s\n", source);
+    switch (type)
+    {
+        case ICMP6_DST_UNREACH:
+            switch (code)
+            {
+                case ICMP6_DST_UNREACH_NOROUTE:
+                    error = "No route to host";
+                    break;
+                case ICMP6_DST_UNREACH_ADMIN:
+                    error = "Administratively prohibited";
+                    break;
+                case ICMP6_DST_UNREACH_BEYONDSCOPE:
+                    error = "Beyond scope of source address";
+                    break;
+                case ICMP6_DST_UNREACH_ADDR:
+                    error = "Address unreachable";
+                    break;
+                case ICMP6_DST_UNREACH_NOPORT:
+                    error = "Port unreachable";
+                    break;
+                default:
+                    bad_code = code;
+                    error = "Dest Unreachable, Bad Code: ";
+                    break;
+            }
+            break ;
+        case ICMP6_PACKET_TOO_BIG:
+            error = "Packet too big";
+            break ;
+        case ICMP6_TIME_EXCEEDED:
+            switch (code)
+            {
+                case ICMP6_TIME_EXCEED_TRANSIT:
+                    error = "Time exceeded in transit";
+                    break;
+                case ICMP6_TIME_EXCEED_REASSEMBLY:
+                    error = "Fragment reassembly time exceeded";
+                    break;
+                default:
+                    bad_code = code;
+                    error = "Time Exceeded, Bad Code: ";
+                    break;
+            }
+            break ;
+        case ICMP6_PARAM_PROB:
+            switch (code)
+            {
+                case ICMP6_PARAMPROB_HEADER:
+                    error = "Bad header";
+                    break;
+                case ICMP6_PARAMPROB_NEXTHEADER:
+                    error = "Bad next header";
+                    break;
+                case ICMP6_PARAMPROB_OPTION:
+                    error = "Bad option";
+                    break;
+                default:
+                    bad_code = code;
+                    error = "Parameter Problem, Bad Code: ";
+                    break;
+            }
+            break ;
+        default:
+            bad_code = type;
+            error = "Bad ICMP6 Type: ";
+            break ;
+    }
+    dprintf(STDERR_FILENO, "From %s icmp_seq=%hu %s", source, sequence, error);
+    if (bad_code != 0)
+        dprintf(STDERR_FILENO, "%hhu", bad_code);
+    dprintf(STDERR_FILENO, "\n");
+}
+
 void    getnameinfo_error_handler(t_ping *ping, int status)
 {
     char    *error  = NULL;
