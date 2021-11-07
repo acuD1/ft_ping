@@ -41,21 +41,22 @@ static void             display_icmp_error(
 
         case IPV6_MODE:
         {
-            struct ip6_hdr  *ip6_hdr    = (struct ip6_hdr *)buffer;
-            struct icmp6_hdr *icmp6_hdr  = (struct icmp6_hdr *)icmp_area;
+            struct ip6_hdr      ip6_hdr;
+            struct icmp6_hdr    *icmp6_hdr  = (struct icmp6_hdr *)icmp_area;
+            char                *buffer_src = (char *)buffer + ICMPHDR_SIZE;
 
             if (icmp6_hdr->icmp6_type != ICMP6_ECHO_REQUEST &&
                 last_seq != sequence)
             {
-                dprintf(STDERR_FILENO, "???\n");
-                inet_ntop_handler(ping, (uint32_t *)&ip6_hdr->ip6_src);
+                ft_memcpy(&ip6_hdr, buffer_src, sizeof(struct ip6_hdr));
+                inet_ntop_handler(ping, (uint32_t *)&ip6_hdr.ip6_src);
                 last_seq = sequence;
                 ping->errors++;
                 if (ping->opts & F_OPT)
                     dprintf(STDERR_FILENO, "E");
                 else
-                    icmp6_error_handler(icmp6_hdr->icmp6_type, icmp6_hdr->icmp6_code, sequence,
-                        ping->buff_ip);
+                    icmp6_error_handler(icmp6_hdr->icmp6_type,
+                        icmp6_hdr->icmp6_code, sequence, ping->buff_ip);
             }
             break;
         }
@@ -108,7 +109,8 @@ static t_packet_data    *process_packet(
                 icmp_area_size -= IPHDR_SIZE;
                 icmp_area += IPHDR_SIZE;
             }
-            if (!(packet_data = validate_packet(ping, icmp_area_size, time_recv, icmp_area)))
+            if (!(packet_data = validate_packet(ping, icmp_area_size, time_recv,
+                                    icmp_area)))
             {
                 display_icmp_error(ping, buffer, icmp_area, ping->sequence);
                 return (NULL);
@@ -172,9 +174,11 @@ t_packet_data           *recv_packet(
 
     if (ping->mode == IPV6_MODE && packet_data)
     {
-        packet_data->ancillary_data.ttl = *(uint8_t *)find_ancillary_data(&msghdr, IPV6_HOPLIMIT);
+        packet_data->ancillary_data.ttl = *(uint8_t *)find_ancillary_data(
+                                                        &msghdr, IPV6_HOPLIMIT);
         if (ping->conf.local == FALSE)
-            inet_ntop(AF_INET6, &((struct sockaddr_in6 *)&tmp)->sin6_addr, ping->buff_ip, INET6_ADDRSTRLEN);
+            inet_ntop(AF_INET6, &((struct sockaddr_in6 *)&tmp)->sin6_addr,
+                ping->buff_ip, INET6_ADDRSTRLEN);
     }
 
     return (packet_data);

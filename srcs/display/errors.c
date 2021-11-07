@@ -152,8 +152,6 @@ void    icmp6_error_handler(
     char    *error      = NULL;
     uint8_t bad_code    = 0;
 
-
-    dprintf(2, "ICMP6 Error: %s\n", source);
     switch (type)
     {
         case ICMP6_DST_UNREACH:
@@ -235,7 +233,8 @@ void    getnameinfo_error_handler(t_ping *ping, int status)
     switch (status)
     {
         case EAI_AGAIN:
-            error = "The name could not be resolved at this time. Try again later";
+            error =
+                "The name could not be resolved at this time. Try again later";
             break ;
         case EAI_FAIL:
             error = "A nonrecoverable error occurred.";

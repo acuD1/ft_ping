@@ -155,12 +155,14 @@ typedef struct                  s_ping
     char                        buff_ip[INET6_ADDRSTRLEN];
     char                        buff_dns[NI_MAXHOST];
     char                        buff_target[NI_MAXHOST];
-    char                        _PADDING(3);
+    char bufferTEST[1500];
+    char                        _PADDING(7);
     t_conf                      conf;
     struct timeval              start;
     struct timeval              end;
     struct timeval              last_send;
     struct sockaddr_storage     target;
+    struct sockaddr_storage     source;
 }                               t_ping;
 
 extern volatile sig_atomic_t    g_ping;

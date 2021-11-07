@@ -15,7 +15,8 @@
 char        *inet_ntop_handler(t_ping *ping, uint32_t *addr)
 {
     ft_memset(&ping->buff_ip, 0, sizeof(ping->buff_ip));
-    if (!(inet_ntop(ping->mode == IPV4_MODE ? AF_INET : AF_INET6, addr, ping->buff_ip, sizeof(ping->buff_ip))))
+    if (!(inet_ntop(ping->mode == IPV4_MODE ? AF_INET : AF_INET6, addr,
+            ping->buff_ip, sizeof(ping->buff_ip))))
     {
         dprintf(STDERR_FILENO, "ft_ping: inet_ntop(): %s\n", strerror(errno));
         exit_routine(ping, FAILURE);
@@ -37,17 +38,31 @@ uint8_t     inet_pton_handler(t_ping *ping, char *target)
 void        getnameinfo_handler(t_ping *ping)
 {
     int     status = 0;
-    struct sockaddr_in6 sa6 = *(struct sockaddr_in6 *)&ping->target;
-    struct sockaddr_in sa = *(struct sockaddr_in *)&ping->target;
 
     ft_memset(ping->buff_dns, 0, sizeof(ping->buff_dns));
-    if ((status = getnameinfo(
-                    ping->mode == IPV4_MODE ? (struct sockaddr *)&sa : (struct sockaddr *)&sa6,
-                    ping->mode == IPV4_MODE ? sizeof(sa) : sizeof(sa6), ping->buff_dns,
-                    sizeof(ping->buff_dns), NULL, 0, NI_NAMEREQD)) != 0)
+    if (ping->mode == IPV4_MODE)
     {
-        if (status != EAI_NONAME)
-            getnameinfo_error_handler(ping, status);
+        struct sockaddr_in sa = *(struct sockaddr_in *)&ping->target;
+        status = getnameinfo((struct sockaddr *)&sa, sizeof(sa), ping->buff_dns,
+                    sizeof(ping->buff_dns), NULL, 0, NI_NAMEREQD)
+    }
+    else
+    {
+        struct sockaddr_in6 sa6 = *(struct sockaddr_in6 *)&ping->target;
+        /* code */
+    }
+
+
+
+        status = getnameinfo(
+                        p->mode =ing= IPV4_MODE ? (struct sockaddr *)&sa : (struct sockaddr *)&sa6,
+                        ping->mode == IPV4_MODE ? sizeof(sa) : sizeof(sa6), ping->buff_dns,
+                        sizeof(ping->buff_dns), NULL, 0, NI_NAMEREQD)) != 0)
+        {
+
+    }
+    if (status != EAI_NONAME)
+        getnameinfo_error_handler(ping, status);
     }
     inet_ntop_handler(ping, ping->mode == IPV4_MODE ? (uint32_t *)&sa.sin_addr : (uint32_t * )&sa6.sin6_addr);
     ping->conf.dns = TRUE;
