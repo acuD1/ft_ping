@@ -168,6 +168,12 @@ uint8_t         set_opts_args(t_ping *ping, int argc, char **argv)
                     "ft_ping: ttl %ld out of range, should be 1..255\n", ttl);
                 return (set_opts_args_failure(&opts_args));
             }
+            if (ttl == 0)
+            {
+                dprintf(STDERR_FILENO,
+                    "ft_ping: can't set unicast time-to-live: Invalid argument\n");
+                return (set_opts_args_failure(&opts_args));
+            }
             ping->conf.ttl = (uint8_t)ttl;
         }
         else
