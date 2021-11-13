@@ -54,9 +54,11 @@ static t_lst    *check_packet(
 {
     t_lst   *packet = NULL;
 
-    if ((ping->opts & F_OPT) == 0 && check_payload(payload, payload_size) != SUCCESS)
+    if ((ping->opts & F_OPT) == 0
+        && check_payload(payload, payload_size) != SUCCESS)
         return (NULL);
-    if (!(packet = ft_lstfind(ping->packets, &sequence, (int (*)(void*, void*))find_sequence)))
+    if (!(packet = ft_lstfind(ping->packets, &sequence,
+                    (int (*)(void*, void*))find_sequence)))
         return (NULL);
     if ((ping->opts & F_OPT) == 0 && payload_size >= TIMEVAL_SIZE)
     {
@@ -66,7 +68,8 @@ static t_lst    *check_packet(
     return (packet);
 }
 
-static uint8_t         check_icmp_sequence(t_ping *ping, void *icmp_area, uint16_t *sequence)
+static uint8_t   check_icmp_sequence(
+                    t_ping *ping, void *icmp_area, uint16_t *sequence)
 {
     if (ping->mode == IPV4_MODE)
     {
@@ -81,7 +84,8 @@ static uint8_t         check_icmp_sequence(t_ping *ping, void *icmp_area, uint16
         struct icmp6_hdr *icmp6_hdr  = (struct icmp6_hdr *)(icmp_area);
 
         *sequence = htons(icmp6_hdr->icmp6_seq);
-        if (icmp6_hdr->icmp6_type != ICMP6_ECHO_REPLY || *sequence > ping->sequence)
+        if (icmp6_hdr->icmp6_type != ICMP6_ECHO_REPLY
+            || *sequence > ping->sequence)
             return (FAILURE);
     }
     return (SUCCESS);

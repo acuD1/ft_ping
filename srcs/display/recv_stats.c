@@ -12,9 +12,9 @@
 
 #include "ft_ping.h"
 
-void     display_recv(
-                    t_ping *ping, void *buffer, t_packet_data *packet_data,
-                    ssize_t *bytes_received)
+void    display_recv(
+            t_ping *ping, void *buffer, t_packet_data *packet_data,
+            ssize_t *bytes_received)
 {
     uint8_t         ttl         = 0;
     ssize_t         bytes       = 0;
@@ -55,7 +55,8 @@ void     display_recv(
 
     if (ping->conf.payload_size >= TIMEVAL_SIZE)
     {
-        latency = calc_latency(&packet_data->time_sent, &packet_data->time_recv);
+        latency =
+            calc_latency(&packet_data->time_sent, &packet_data->time_recv);
         if (latency < 0.1)
             dprintf(STDOUT_FILENO, " time=%.3lf ms", latency);
         else
@@ -64,16 +65,18 @@ void     display_recv(
     dprintf(STDOUT_FILENO, "\n");
 }
 
-void     display_unowned(t_ping *ping, void *buffer, ssize_t *bytes_received)
+void    display_unowned(t_ping *ping, void *buffer, ssize_t *bytes_received)
 {
     struct iphdr *iphdr     = (struct iphdr *)buffer;
 
     dprintf(STDERR_FILENO,
-        "ft_ping: received an unowned packet: %zu bytes from %s\n", *bytes_received,
-        inet_ntop_handler(ping, &iphdr->saddr));
+        "ft_ping: received an unowned packet: %zu bytes from %s\n",
+        *bytes_received,
+    inet_ntop_handler(ping, &iphdr->saddr));
 }
 
-void     display_stats(t_ping *ping, t_ping_rtt *ping_rtt, t_ping_ewma *ping_ewma)
+void    display_stats(
+            t_ping *ping, t_ping_rtt *ping_rtt, t_ping_ewma *ping_ewma)
 {
     if (ping->conf.count == 0)
         dprintf(STDOUT_FILENO, "\n");

@@ -45,6 +45,9 @@ static void             display_icmp_error(
             struct icmp6_hdr    *icmp6_hdr  = (struct icmp6_hdr *)icmp_area;
             char                *buffer_src = (char *)buffer + ICMPHDR_SIZE;
 
+            if (icmp6_hdr->icmp6_type == ND_NEIGHBOR_SOLICIT
+                || icmp6_hdr->icmp6_type == ND_NEIGHBOR_ADVERT)
+                return ;
             if (icmp6_hdr->icmp6_type != ICMP6_ECHO_REQUEST &&
                 last_seq != sequence)
             {

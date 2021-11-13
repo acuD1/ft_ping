@@ -85,7 +85,7 @@
 typedef struct                  s_conf
 {
     double                      interval;
-    int                         custom_iphdr;
+    int                         ok;
     int                         so_debug;
     int32_t                     count;
     int32_t                     preload;
@@ -155,8 +155,7 @@ typedef struct                  s_ping
     char                        buff_ip[INET6_ADDRSTRLEN];
     char                        buff_dns[NI_MAXHOST];
     char                        buff_target[NI_MAXHOST];
-    char bufferTEST[1500];
-    char                        _PADDING(7);
+    char                        _PADDING(3);
     t_conf                      conf;
     struct timeval              start;
     struct timeval              end;
@@ -202,21 +201,27 @@ t_packet_data                   *validate_packet(
                                     struct timeval *time_received,
                                     void *icmp_area);
 char                            *inet_ntop_handler(t_ping *ping, uint32_t *addr);
-void                            display_stats(t_ping *ping, t_ping_rtt *ping_rtt, t_ping_ewma *ping_ewma);
+void                            display_stats(
+                                    t_ping *ping, t_ping_rtt *ping_rtt,
+                                    t_ping_ewma *ping_ewma);
 void                            fetch_stats(t_ping *ping);
 void                            display_recv(
                                     t_ping *ping, void *buffer,
                                     t_packet_data *packet_data,
                                     ssize_t *bytes_received);
 uint16_t                        in_cksum(void *buffer, size_t len);
-void                            display_unowned(t_ping *ping, void *buffer, ssize_t *bytes_received);
-void                            getnameinfo_error_handler(t_ping *ping, int status);
+void                            display_unowned(
+                                    t_ping *ping, void *buffer,
+                                    ssize_t *bytes_received);
+void                            getnameinfo_error_handler(
+                                    t_ping *ping, int status);
 uint8_t                         inet_pton_handler(t_ping *ping, char *target);
 void                            getnameinfo_handler(t_ping *ping);
-void                            *find_ancillary_data(struct msghdr *msghdr, int cmsg_type);
+void                            *find_ancillary_data(
+                                    struct msghdr *msghdr, int cmsg_type);
 void                            icmp6_error_handler(
-                                    uint8_t type, uint8_t code, uint16_t sequence, char *source);
-
+                                    uint8_t type, uint8_t code,
+                                    uint16_t sequence, char *source);
 
 /* DEBUG */
 void                            print_bytes(int bytes, void *msg);

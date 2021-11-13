@@ -18,7 +18,7 @@ static void     resolve_source(t_ping *ping, struct sockaddr_in6 *source)
 
     if (getifaddrs(&ifap) == -1)
     {
-        printf("[DEBUG] getifaddrs(): ERROR: %s , errno %d\n", strerror(errno), errno);
+        printf("ft_ping: getifaddrs(): %s\n", strerror(errno));
         exit_routine(ping, FAILURE);
     }
 
@@ -30,7 +30,8 @@ static void     resolve_source(t_ping *ping, struct sockaddr_in6 *source)
             && !(ifa->ifa_flags & (IFF_LOOPBACK))
             && (ifa->ifa_flags & (IFF_RUNNING)))
         {
-            source->sin6_addr = ((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
+            source->sin6_addr =
+                ((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
             break ;
         }
     }
@@ -66,8 +67,10 @@ static void     setup_iphdr(t_ping *ping, void *packet)
         resolve_source(ping, &source);
 
         ft_memset(ip6_hdr, 0, sizeof(struct ip6_hdr));
-        ip6_hdr->ip6_ctlun.ip6_un1.ip6_un1_flow = htonl((6 << 28) | (0 << 20) | 0);
-        ip6_hdr->ip6_ctlun.ip6_un1.ip6_un1_plen = htons(ping->conf.payload_size + ICMPHDR_SIZE);
+        ip6_hdr->ip6_ctlun.ip6_un1.ip6_un1_flow =
+            htonl((6 << 28) | (0 << 20) | 0);
+        ip6_hdr->ip6_ctlun.ip6_un1.ip6_un1_plen =
+            htons(ping->conf.payload_size + ICMPHDR_SIZE);
         ip6_hdr->ip6_ctlun.ip6_un1.ip6_un1_nxt = IPPROTO_ICMPV6;
         ip6_hdr->ip6_ctlun.ip6_un1.ip6_un1_hlim = ping->conf.ttl;
         ip6_hdr->ip6_src = source.sin6_addr;
@@ -102,10 +105,12 @@ static void     setup_icmphdr(t_ping *ping, void *packet)
     icmphdr->type               = ICMP_ECHO;
     icmphdr->un.echo.id         = htons((uint16_t)ping->conf.pid);
     icmphdr->un.echo.sequence   = htons(ping->sequence);
-    icmphdr->checksum           = in_cksum(packet, ping->packet_size - IPHDR_SIZE);
+    icmphdr->checksum           =
+        in_cksum(packet, ping->packet_size - IPHDR_SIZE);
 }
 
-static void        set_buff_ip6_hdr(char *buff_checksum, struct ip6_hdr *ip6_hdr)
+static void     set_buff_ip6_hdr(
+                    char *buff_checksum, struct ip6_hdr *ip6_hdr)
 {
     ft_memcpy(buff_checksum, &ip6_hdr->ip6_src, 16);
     ft_memcpy(buff_checksum + 16, &ip6_hdr->ip6_dst, 16);
@@ -113,7 +118,8 @@ static void        set_buff_ip6_hdr(char *buff_checksum, struct ip6_hdr *ip6_hdr
     ft_memcpy(buff_checksum + 39, &ip6_hdr->ip6_ctlun.ip6_un1.ip6_un1_nxt, 1);
 }
 
-static void        set_buff_icmp6_hdr(char *buff_checksum, struct icmp6_hdr *icmp6_hdr)
+static void     set_buff_icmp6_hdr(
+                    char *buff_checksum, struct icmp6_hdr *icmp6_hdr)
 {
     ft_memcpy(buff_checksum, &icmp6_hdr->icmp6_type, 1);
     ft_memcpy(buff_checksum + 1, &icmp6_hdr->icmp6_code, 1);
@@ -121,7 +127,8 @@ static void        set_buff_icmp6_hdr(char *buff_checksum, struct icmp6_hdr *icm
     ft_memcpy(buff_checksum + 4, &icmp6_hdr->icmp6_seq, 2);
 }
 
-static void        set_buff_icmp6_data(char *buff_checksum, uint8_t *data, size_t size)
+static void     set_buff_icmp6_data(
+                    char *buff_checksum, uint8_t *data, size_t size)
 {
     ft_memcpy(buff_checksum, data, size);
 }
@@ -134,9 +141,11 @@ static uint16_t    icmp6_checksum(t_ping *ping, void *packet)
     ft_memset(buff_checksum, 0, 104);
 
     set_buff_ip6_hdr(buff_checksum, (struct ip6_hdr *)packet);
-    set_buff_icmp6_hdr(buff_checksum + 40, (struct icmp6_hdr *)((char *)packet + 40));
-    set_buff_icmp6_data(buff_checksum + 40 + 8, (uint8_t *)((char *)packet + 40 + ICMPHDR_SIZE),
-                        ping->conf.payload_size);
+    set_buff_icmp6_hdr(buff_checksum + 40,
+        (struct icmp6_hdr *)((char *)packet + 40));
+    set_buff_icmp6_data(buff_checksum + 40 + 8,
+        (uint8_t *)((char *)packet + 40 + ICMPHDR_SIZE),
+        ping->conf.payload_size);
     return (in_cksum(buff_checksum, 40 + 8 + ping->conf.payload_size));
 }
 
@@ -186,11 +195,6 @@ void    send_packet(t_ping *ping, struct timeval *current)
                 sizeof(struct sockaddr_in6));
     }
 
-    // if (bytes_sent == -1)
-    // {
-    //     // printf("Ping error\n");
-    //     ping->errors++;
-    // }
     if (!(ft_lstappend(&ping->packets,
             ft_lstnew(&packet_data, sizeof(t_packet_data)))))
         exit_routine(ping, FAILURE);

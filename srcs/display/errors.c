@@ -228,7 +228,6 @@ void    icmp6_error_handler(
 void    getnameinfo_error_handler(t_ping *ping, int status)
 {
     char    *error  = NULL;
-    dprintf(STDERR_FILENO, "STATUS |%d|\n", status);
 
     switch (status)
     {

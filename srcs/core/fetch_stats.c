@@ -24,13 +24,15 @@ static uint8_t  fetch_ewma(void *content, void *context)
 
     if (packet_data->status & PACKET_RECEIVED)
     {
-        latency = calc_latency(&packet_data->time_sent, &packet_data->time_recv);
+        latency =
+            calc_latency(&packet_data->time_sent, &packet_data->time_recv);
         if (ping_ewma->ewma == 0)
         {
             ping_ewma->ewma = latency;
             return (SUCCESS);
         }
-        ping_ewma->ewma = (latency * ping_ewma->weight) + (ping_ewma->ewma * (1.000 - ping_ewma->weight));
+        ping_ewma->ewma = (latency * ping_ewma->weight)
+                            + (ping_ewma->ewma * (1.000 - ping_ewma->weight));
     }
     return (SUCCESS);
 }

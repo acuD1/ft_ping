@@ -15,7 +15,7 @@
 /* Build informations */
 void     print_version(void)
 {
-    fprintf(stdout, "ft_ping: v.%s-%s-%s-%s\n",
+    dprintf(STDOUT_FILENO, "ft_ping: v.%s-%s-%s-%s\n",
         BUILD_VERSION_STRING,
         BUILD_RELEASE_STRING,
         BUILD_PATCH_STRING,
@@ -24,37 +24,35 @@ void     print_version(void)
 
 void     print_usage(void)
 {
-    fprintf(stderr, "Usage: ft_ping [-vh] <destination>\n");
+    dprintf(STDOUT_FILENO,
+        "Usage: ft_ping\t[-vhdDfqnV] [-c count] [-i interval]\n");
+    dprintf(STDOUT_FILENO,
+        "\t\t[-s packetsize] [-l preload] [-t ttl] destination\n");
 }
 
 void     print_unallowed_opt(t_opts_args *opts_args)
 {
     if (opts_args->invalid)
-        fprintf(stderr,
+        dprintf(STDERR_FILENO,
             "ft_ping: unrecognized option '--%s'\n", opts_args->invalid);
     else
-        fprintf(stderr,
+        dprintf(STDERR_FILENO,
             "ft_ping: invalid option -- '%c'\n", (char)(opts_args->all % 128));
 }
 
 void    print_init_handler(t_ping *ping)
 {
-    // if (ping->mode == IPV4_MODE)
-    //     inet_ntop_handler(ping, (uint32_t *)&((struct sockaddr_in *)&ping->target)->sin_addr);
-    // else
-    //     inet_ntop_handler(ping, (uint32_t *)&((struct sockaddr_in6 *)&ping->target)->sin6_addr);
 
     if (ping->conf.diff_dns)
-    {
-        dprintf(STDOUT_FILENO, "PING %s(%s (%s)) ", ping->buff_target, ping->buff_dns, ping->buff_ip);
-    }
+        dprintf(STDOUT_FILENO, "PING %s(%s (%s)) ", ping->buff_target,
+        ping->buff_dns, ping->buff_ip);
     else
-    {
-        dprintf(STDOUT_FILENO, "PING %s (%s) ", ping->buff_target, ft_strlen(ping->buff_ip) ? ping->buff_ip : ping->buff_target);
-    }
+        dprintf(STDOUT_FILENO, "PING %s (%s) ", ping->buff_target,
+            ft_strlen(ping->buff_ip) ? ping->buff_ip : ping->buff_target);
 
     if (ping->mode == IPV4_MODE)
-        dprintf(STDOUT_FILENO, "%d(%zu) bytes of data.\n", ping->conf.payload_size, ping->packet_size);
+        dprintf(STDOUT_FILENO, "%d(%zu) bytes of data.\n",
+            ping->conf.payload_size, ping->packet_size);
     else
         dprintf(STDOUT_FILENO, "%d data bytes\n", ping->conf.payload_size);
 

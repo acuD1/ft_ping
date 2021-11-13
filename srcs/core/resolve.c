@@ -135,7 +135,6 @@ uint8_t     resolve_target(t_ping *ping, char *target)
     ping->packet_size += ping->mode == IPV4_MODE ? IPHDR_SIZE : IPV6HDR_SIZE;
     ping->packet_size += ICMPHDR_SIZE;
 
-    /* Cleaning */
     for (struct addrinfo *tmp = NULL; res; res = tmp)
     {
         tmp = res->ai_next;
@@ -144,15 +143,14 @@ uint8_t     resolve_target(t_ping *ping, char *target)
 
     if ((ping->mode == IPV4_MODE
         && !*((uint32_t *)&((struct sockaddr_in *)&ping->target)->sin_addr))
-        || (ping->mode == IPV6_MODE && !*((uint32_t *)&((struct sockaddr_in6 *)&ping->target)->sin6_addr)))
+        || (ping->mode == IPV6_MODE
+        && !*((uint32_t *)&((struct sockaddr_in6 *)&ping->target)->sin6_addr)))
     {
         resolve_local(ping);
         if (inet_pton_handler(ping, target) != TRUE)
             ping->conf.diff_dns = TRUE;
         ping->conf.local = TRUE;
     }
-
-    dprintf(STDERR_FILENO, "[DEBUG] TARGET\t|%s|\n[DEBUG] DNS\t|%s|\n[DEBUG] IP\t|%s|\n", ping->buff_target, ping->buff_dns, ping->buff_ip);
 
     return (SUCCESS);
 }

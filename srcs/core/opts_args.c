@@ -67,20 +67,23 @@ uint8_t         set_opts_args(t_ping *ping, int argc, char **argv)
         {
             if (ft_isnum(tmp->arg) != TRUE)
             {
-                dprintf(STDERR_FILENO, "ft_ping: bad number of packets to transmit.\n");
+                dprintf(STDERR_FILENO,
+                    "ft_ping: bad number of packets to transmit.\n");
                 return (set_opts_args_failure(&opts_args));
             }
             long count = ft_atol(tmp->arg);
             if (count > INT32_MAX || count <= 0)
             {
-                dprintf(STDERR_FILENO, "ft_ping: bad number of packets to transmit.\n");
+                dprintf(STDERR_FILENO,
+                    "ft_ping: bad number of packets to transmit.\n");
                 return (set_opts_args_failure(&opts_args));
             }
             ping->conf.count = (int32_t)count;
         }
         else
         {
-            dprintf(STDERR_FILENO, "ft_ping: option requires an argument -- 'c'\n");
+            dprintf(STDERR_FILENO,
+                "ft_ping: option requires an argument -- 'c'\n");
             print_usage();
             return (set_opts_args_failure(&opts_args));
         }
@@ -92,19 +95,23 @@ uint8_t         set_opts_args(t_ping *ping, int argc, char **argv)
             int packet_size = ft_atoi(tmp->arg);
             if (packet_size < 0)
             {
-                dprintf(STDERR_FILENO, "ft_ping: illegal negative packet size %d\n", packet_size);
+                dprintf(STDERR_FILENO,
+                    "ft_ping: illegal negative packet size %d\n", packet_size);
                 return (set_opts_args_failure(&opts_args));
             }
             if (packet_size > 1472)
             {
-                dprintf(STDERR_FILENO, "ft_ping: packet size too large: %d. (Maximum 1472)\n", packet_size);
-                    return (set_opts_args_failure(&opts_args));
+                dprintf(STDERR_FILENO,
+                    "ft_ping: packet size too large: %d. (Maximum 1472)\n",
+                    packet_size);
+                return (set_opts_args_failure(&opts_args));
             }
             ping->conf.payload_size = (uint16_t)packet_size;
         }
         else
         {
-            dprintf(STDERR_FILENO, "ft_ping: option requires an argument -- 's'\n");
+            dprintf(STDERR_FILENO,
+                "ft_ping: option requires an argument -- 's'\n");
             print_usage();
             return (set_opts_args_failure(&opts_args));
         }
@@ -123,7 +130,8 @@ uint8_t         set_opts_args(t_ping *ping, int argc, char **argv)
         }
         else
         {
-            dprintf(STDERR_FILENO, "ft_ping: option requires an argument -- 'i'\n");
+            dprintf(STDERR_FILENO,
+                "ft_ping: option requires an argument -- 'i'\n");
             print_usage();
             return (set_opts_args_failure(&opts_args));
         }
@@ -135,14 +143,16 @@ uint8_t         set_opts_args(t_ping *ping, int argc, char **argv)
             int32_t preload = (int32_t)ft_atol(tmp->arg);
             if (preload <= 0 || preload > (UINT16_MAX + 1))
             {
-                dprintf(STDERR_FILENO, "ft_ping: bad preload value, should be 1..65536\n");
+                dprintf(STDERR_FILENO,
+                    "ft_ping: bad preload value, should be 1..65536\n");
                 return (set_opts_args_failure(&opts_args));
             }
             ping->conf.preload = preload;
         }
         else
         {
-            dprintf(STDERR_FILENO, "ft_ping: option requires an argument -- 'l'\n");
+            dprintf(STDERR_FILENO,
+                "ft_ping: option requires an argument -- 'l'\n");
             print_usage();
             return (set_opts_args_failure(&opts_args));
         }
@@ -154,14 +164,16 @@ uint8_t         set_opts_args(t_ping *ping, int argc, char **argv)
             long ttl = ft_atol(tmp->arg);
             if (ttl > UINT8_MAX || ttl < 0)
             {
-                dprintf(STDERR_FILENO, "ft_ping: ttl %ld out of range, should be 1..255\n", ttl);
+                dprintf(STDERR_FILENO,
+                    "ft_ping: ttl %ld out of range, should be 1..255\n", ttl);
                 return (set_opts_args_failure(&opts_args));
             }
             ping->conf.ttl = (uint8_t)ttl;
         }
         else
         {
-            dprintf(STDERR_FILENO, "ft_ping: option requires an argument -- 'w'\n");
+            dprintf(STDERR_FILENO,
+                "ft_ping: option requires an argument -- 'w'\n");
             print_usage();
             return (set_opts_args_failure(&opts_args));
         }

@@ -43,28 +43,26 @@ void        getnameinfo_handler(t_ping *ping)
     if (ping->mode == IPV4_MODE)
     {
         struct sockaddr_in sa = *(struct sockaddr_in *)&ping->target;
-        status = getnameinfo((struct sockaddr *)&sa, sizeof(sa), ping->buff_dns,
-                    sizeof(ping->buff_dns), NULL, 0, NI_NAMEREQD)
+        if ((status = getnameinfo((struct sockaddr *)&sa, sizeof(sa), ping->buff_dns,
+                    sizeof(ping->buff_dns), NULL, 0, NI_NAMEREQD)) != 0)
+        {
+            if (status != EAI_NONAME)
+                getnameinfo_error_handler(ping, status);
+        }
+        inet_ntop_handler(ping, (uint32_t *)&sa.sin_addr);
     }
     else
     {
         struct sockaddr_in6 sa6 = *(struct sockaddr_in6 *)&ping->target;
-        /* code */
-    }
-
-
-
-        status = getnameinfo(
-                        p->mode =ing= IPV4_MODE ? (struct sockaddr *)&sa : (struct sockaddr *)&sa6,
-                        ping->mode == IPV4_MODE ? sizeof(sa) : sizeof(sa6), ping->buff_dns,
-                        sizeof(ping->buff_dns), NULL, 0, NI_NAMEREQD)) != 0)
+        if ((status = getnameinfo((struct sockaddr *)&sa6, sizeof(sa6),
+                    ping->buff_dns, sizeof(ping->buff_dns), NULL, 0,
+                    NI_NAMEREQD)) != 0)
         {
-
+            if (status != EAI_NONAME)
+                getnameinfo_error_handler(ping, status);
+        }
+        inet_ntop_handler(ping, (uint32_t *)&sa6.sin6_addr);
     }
-    if (status != EAI_NONAME)
-        getnameinfo_error_handler(ping, status);
-    }
-    inet_ntop_handler(ping, ping->mode == IPV4_MODE ? (uint32_t *)&sa.sin_addr : (uint32_t * )&sa6.sin6_addr);
     ping->conf.dns = TRUE;
 }
 

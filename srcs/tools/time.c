@@ -29,7 +29,8 @@ double  calc_latency(void *t_start, void *t_end)
     double start;
     double end;
 
-    start = (double)tmp_t_start.tv_sec * 1000000.0 + (double)tmp_t_start.tv_usec;
+    start =
+        (double)tmp_t_start.tv_sec * 1000000.0 + (double)tmp_t_start.tv_usec;
     end = (double)tmp_t_end.tv_sec * 1000000.0 + (double)tmp_t_end.tv_usec;
 
     return ((end - start) / 1000.0);

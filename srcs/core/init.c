@@ -18,7 +18,7 @@ void    init_ping(t_ping *ping)
 {
     ft_memset(ping, 0, sizeof(t_ping));
 
-    ping->conf.custom_iphdr = TRUE;
+    ping->conf.ok = TRUE;
     ping->conf.payload_size = PAYLOAD_SIZE;
     ping->conf.ttl          = TTL;
     ping->conf.pid          = getpid();

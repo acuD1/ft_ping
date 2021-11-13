@@ -12,6 +12,19 @@
 
 #include "ft_ping.h"
 
+static void handle_interval(t_ping *ping)
+{
+    if (ping->conf.interval >= 1.0)
+        alarm((uint32_t)ping->conf.interval);
+    else
+    {
+        double interval = ping->conf.interval * 1000000.0;
+        if (interval < 10000.0)
+            interval = 10000.0;
+        ualarm((uint32_t)interval, 0);
+    }
+}
+
 uint8_t         exec_ping(t_ping *ping)
 {
     char            buffer[MAX_MTU];
@@ -45,17 +58,7 @@ uint8_t         exec_ping(t_ping *ping)
                 gettimeofday_handler(ping, &last_send);
             send_packet(ping, &current);
             if (ping->opts & I_OPT)
-            {
-                if (ping->conf.interval >= 1.0)
-                    alarm((uint32_t)ping->conf.interval);
-                else
-                {
-                    double interval = ping->conf.interval * 1000000.0;
-                    if (interval < 10000.0)
-                        interval = 10000.0;
-                    ualarm((uint32_t)interval, 0);
-                }
-            }
+                handle_interval(ping);
             else
                 alarm(1);
             g_ping = 0;
@@ -85,7 +88,8 @@ uint8_t         exec_ping(t_ping *ping)
                 timersub(&timeout, &last_send, &res);
                 if ((double)res.tv_sec > 1.0)
                     break;
-                if (!(packet_data = recv_packet(ping, buffer, &bytes_recv, &timeout)))
+                if (!(packet_data =
+                        recv_packet(ping, buffer, &bytes_recv, &timeout)))
                     continue ;
                 if ((ping->opts & Q_OPT) == 0)
                 {
@@ -100,7 +104,8 @@ uint8_t         exec_ping(t_ping *ping)
                 }
             }
         }
-        else if (!(packet_data = recv_packet(ping, buffer, &bytes_recv, &current)))
+        else if (!(packet_data =
+                    recv_packet(ping, buffer, &bytes_recv, &current)))
         {
             if (ping->opts & F_OPT)
             {
@@ -108,11 +113,14 @@ uint8_t         exec_ping(t_ping *ping)
                 timersub(&current, &ping->start, &res);
                 double total_micro_second = (double)res.tv_sec * 1000000.0;
                 total_micro_second += (double)res.tv_usec;
-                if (!ping->received || (ping->received && ((double)ping->received / total_micro_second) < 0.0001))
+                if (!ping->received || (ping->received
+                        && ((double)ping->received / total_micro_second)
+                        < 0.0001))
                 {
                     ft_memset(&res, 0, sizeof(struct timeval));
                     timersub(&current, &last_send, &res);
-                    if ((double)res.tv_usec > 20000.0 && g_ping & PENDING_PACKET)
+                    if ((double)res.tv_usec > 20000.0
+                        && g_ping & PENDING_PACKET)
                     {
                         gettimeofday_handler(ping, &last_send);
                         g_ping |= SEND_PACKET;
