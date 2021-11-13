@@ -3,7 +3,7 @@
 
 **/ft_ping
 **/build/*
-*.build
+#*.build
 
 # Dir
 
@@ -22,7 +22,7 @@ libft/*.a
 **/*.dSYM
 
 # Random
-auteur
+#auteur
 
 ### macOS ###
 # General
