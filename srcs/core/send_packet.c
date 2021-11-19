@@ -6,7 +6,7 @@
 /*   By: arsciand <arsciand@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/06 16:35:34 by arsciand          #+#    #+#             */
-/*   Updated: 2021/09/30 19:47:39 by arsciand         ###   ########.fr       */
+/*   Updated: 2021/11/19 17:40:41 by arsciand         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,6 +194,8 @@ void    send_packet(t_ping *ping, struct timeval *current)
                 MSG_DONTWAIT, (struct sockaddr_in6 *)&ping->target,
                 sizeof(struct sockaddr_in6));
     }
+
+    (void)bytes_sent;
 
     if (!(ft_lstappend(&ping->packets,
             ft_lstnew(&packet_data, sizeof(t_packet_data)))))
